@@ -1,0 +1,34 @@
+{
+  "name": "@dil/ckeditor-plugins",
+  "version": "1.0.0",
+  "description": "Custom CKEditor 5 plugins and components",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./plugins/*": "./src/plugins/*",
+    "./editors/*": "./src/editors/*",
+    "./hooks/*": "./src/hooks/*",
+    "./utils/*": "./src/utils/*",
+    "./styles/*": "./src/styles/*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@ckeditor/ckeditor5-react": "^11.0.0"
+  },
+  "dependencies": {
+    "mathlive": "^0.108.2",
+    "qrcode": "^1.5.4"
+  },
+  "keywords": [
+    "ckeditor",
+    "ckeditor5",
+    "plugins",
+    "rich-text-editor",
+    "math",
+    "mathlive"
+  ],
+  "author": "",
+  "license": "UNLICENSED"
+}

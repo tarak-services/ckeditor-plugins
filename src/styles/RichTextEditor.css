@@ -1,0 +1,342 @@
+Rich text editor container
+.rich-text-editor {
+  width: 100%;
+  position: relative;
+}
+
+.editor-content {
+  width: 100%;
+}
+
+/* Rich text editor toolbar styling */
+.rich-text-editor .ck-toolbar {
+  border: 1px solid #ced4da;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  background: #f8f9fa;
+}
+
+/* Global: Force all CKEditor toolbars to wrap instead of collapsing into overflow menu */
+.ck.ck-toolbar {
+  flex-wrap: wrap;
+  overflow: visible !important;
+}
+
+.ck.ck-toolbar > .ck-toolbar__items {
+  flex-wrap: wrap !important;
+}
+
+/* Hide the overflow/grouped dropdown menu (the "..." button) */
+.ck.ck-toolbar__grouped-dropdown {
+  display: none !important;
+}
+
+/* Ensure proper spacing */
+.rich-text-editor .ck-content {
+  min-height: inherit;
+}
+
+/* Apply max-width constraint to rich text editor content */
+.rich-text-editor .ck-editor__editable {
+  max-width: var(--editor-max-width, none);
+  margin: 0 auto;
+}
+
+/* When max-width is set, center the editable area */
+.rich-text-editor:has([style*="--editor-max-width"]) .ck-editor__editable {
+  margin-left: 0;
+}
+
+/* Ensure content inside the rich text editor respects max-width */
+.rich-text-editor .ck-editor__editable .ck-content {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+
+
+/* Toolbar dropdown button widths - fixed widths for consistent sizing */
+/* Font family dropdown - wider for font names */
+.ck.ck-toolbar .ck-font-family-dropdown .ck-button__label {
+  width: 80px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ck.ck-toolbar li.ck-list__item .ck-button__label {
+  width: 100% !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Font size dropdown - narrow fixed width for numbers */
+.ck.ck-toolbar .ck-font-size-dropdown .ck-button__label {
+  width: 35px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Line height dropdown - narrow fixed width for numbers */
+.ck.ck-toolbar .ck-line-height-dropdown .ck-button__label {
+  width: 35px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure dropdowns close on selection */
+.rich-text-editor .ck-dropdown__panel .ck-list__item {
+  cursor: pointer;
+}
+
+.rich-text-editor .ck-dropdown__panel .ck-list__item:hover {
+  background-color: #f0f0f0;
+}
+
+/* Font family list items - prevent text truncation */
+.ck-list__item {
+  white-space: nowrap !important;
+}
+
+.ck-list__item .ck-button__label {
+  text-overflow: clip !important;
+}
+
+
+
+
+
+
+.editor-toolbar .ck-toolbar {
+  border: none;
+  background: transparent;
+  border-radius: 0;
+}
+
+/*
+
+.ck-content figure.table:not(.layout-table)>table>tbody>tr>td,
+.ck-content figure.table:not(.layout-table)>table>tbody>tr>th,
+.ck-content figure.table:not(.layout-table)>table>thead>tr>td,
+.ck-content figure.table:not(.layout-table)>table>thead>tr>th,
+.ck-content table.table:not(.layout-table)>tbody>tr>td,
+.ck-content table.table:not(.layout-table)>tbody>tr>th,
+.ck-content table.table:not(.layout-table)>thead>tr>td,
+.ck-content table.table:not(.layout-table)>thead>tr>th {
+  padding: 0;
+} */
+
+.ck-content .table:not(.layout-table) {
+  margin: 0px;
+}
+
+/* Layout table styling - no borders, no padding */
+.ck-content table.layout-table {
+  border: none !important;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.ck-content table.layout-table td,
+.ck-content table.layout-table th {
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Override CKEditor's default min-width on table cells to allow full resize control */
+.ck-editor__editable .table.layout-table > table > tbody > tr > td,
+.ck-editor__editable .table.layout-table > table > tbody > tr > th,
+.ck-editor__editable .table.layout-table > table > thead > tr > td,
+.ck-editor__editable .table.layout-table > table > thead > tr > th,
+.ck-editor__editable table.layout-table td,
+.ck-editor__editable table.layout-table th,
+.ck-editor__editable table td,
+.ck-editor__editable table th {
+  min-width: 0 !important;
+}
+
+/* Custom Table Column Resize - Override CKEditor's minimum width */
+
+/* Remove min-width constraints on table columns */
+.ck-editor__editable table col {
+  min-width: 0 !important;
+}
+
+.ck-editor__editable table td,
+.ck-editor__editable table th {
+  min-width: 0 !important;
+}
+
+/* Make CKEditor's resize handles easier to grab */
+.ck-table-column-resizer {
+  width: 10px !important;
+  right: -5px !important;
+}
+
+.ck-content figure.table.layout-table {
+  margin: 0;
+}
+
+/* Inline editable styling */
+.ck.ck-editor__editable_inline {
+  padding: 0px;
+}
+
+.ck.ck-editor__editable_inline>:first-child {
+  margin-top: 0;
+}
+
+.ck.ck-editor__editable_inline p {
+  margin: 0;
+  padding: 0;
+}
+
+/* Editable base styles */
+.ck.ck-editor__editable {
+  overflow: hidden !important;
+  font-family: var(--default-font-family, inherit);
+  font-size: var(--default-font-size, inherit);
+  line-height: var(--default-line-height, inherit);
+  box-sizing: border-box;
+}
+
+/* Alignment classes - CKEditor outputs these, we define the styles */
+.ck.ck-editor__editable .text-align-left {
+  text-align: left;
+}
+
+.ck.ck-editor__editable .text-align-center {
+  text-align: center;
+}
+
+.ck.ck-editor__editable .text-align-right {
+  text-align: right;
+}
+
+.ck.ck-editor__editable .text-align-justify {
+  text-align: justify;
+}
+
+/* Text align last - justifies the last line of a paragraph */
+.ck.ck-editor__editable .text-align-last-justify {
+  text-align-last: justify;
+}
+
+/* Apply default alignment only to paragraphs WITHOUT explicit alignment classes.
+   This ensures user-set alignments are preserved while unset content uses the default. */
+.ck.ck-editor__editable_inline[dir=ltr] p:not(.text-align-left):not(.text-align-center):not(.text-align-right):not(.text-align-justify) {
+  text-align: var(--default-text-alignment, left);
+}
+
+.ck.ck-editor__editable_inline[dir=rtl] p:not(.text-align-left):not(.text-align-center):not(.text-align-right):not(.text-align-justify) {
+  text-align: var(--default-text-alignment, right);
+}
+
+/* Focus state */
+.ck-editor__editable:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+  border-color: #80bdff;
+}
+
+
+.ck-editor__editable img {
+  max-width: 100% !important;
+  height: auto;
+}
+
+/* QR code images should maintain their aspect ratio (1:1 square) */
+.ck-editor__editable img[alt^="QR Code:"] {
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+
+
+.ck.ck-editor__editable .math-formula-render {
+  padding: 0px;
+  margin: 0px;
+  border:0px;
+  background: none;
+}
+.ck.ck-editor__editable .math-formula-widget * {
+  cursor: pointer !important;
+}
+
+.ck .ck-editor__nested-editable {
+  border-color: black;
+  border-width: 1px;
+}
+
+/* Ensure resized tables maintain their layout */
+.ck-content table.ck-table-resized {
+  table-layout: fixed;
+}
+
+.ck-content table.ck-table-resized td,
+.ck-content table.ck-table-resized th {
+  word-break: normal;
+  overflow-wrap: normal;
+  text-indent: 0;
+}
+
+/* Hide CKEditor's default table edge resize handles - prevent table width changes */
+.ck-widget__resizer {
+  display: none !important;
+}
+
+/* Hide table column resize handles from CKEditor (we use custom plugin) */
+.ck .ck-table-column-resizer {
+  display: none !important;
+}
+
+/* Soft Break (BR) Visibility - Show line breaks as deletable placeholder boxes */
+.ck.ck-editor__editable .ck-soft-break-indicator {
+  display: inline;
+  position: relative;
+}
+
+.ck.ck-editor__editable .ck-soft-break-indicator::before {
+  content: '↵';
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.75em;
+  color: #888;
+  background-color: #f0f0f0;
+  border: 1px dashed #ccc;
+  border-radius: 3px;
+  padding: 0 3px;
+  margin: 0 1px;
+  vertical-align: middle;
+  line-height: 1.4;
+  cursor: default;
+  user-select: all;
+}
+
+.ck.ck-editor__editable .ck-soft-break-indicator:hover::before {
+  background-color: #ffe0e0;
+  border-color: #f88;
+  color: #c00;
+}
+
+/* Slim variant - compact single-row toolbar */
+.rich-text-editor--slim .ck.ck-toolbar {
+  flex-wrap: nowrap;
+}
+
+.rich-text-editor--slim .ck.ck-toolbar > .ck-toolbar__items {
+  flex-wrap: nowrap !important;
+}
+
+/* Disabled state */
+.rich-text-editor--disabled .ck.ck-toolbar {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.rich-text-editor--disabled .ck.ck-editor__editable {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
