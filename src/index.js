@@ -1,26 +1,54 @@
 // Plugins - Factory functions that create CKEditor plugins
-export { default as createAlignmentDefaultPlugin } from './plugins/AlignmentDefaultPlugin.js';
-export { default as createCurlyQuotesPlugin } from './plugins/CurlyQuotesPlugin.js';
-export { default as createCustomTableColumnResizePlugin } from './plugins/CustomTableColumnResizePlugin.js';
-export { default as createFontDropdownLabelsPlugin } from './plugins/FontDropdownLabelsPlugin.js';
-export { default as createFontFamilySearchPlugin } from './plugins/FontFamilySearchPlugin.js';
-export { default as createFontSizeSearchPlugin } from './plugins/FontSizeSearchPlugin.js';
-export { default as createFontSymbolSelectorPlugin } from './plugins/FontSymbolSelectorPlugin.jsx';
-export { default as createImageDPIScalePlugin } from './plugins/ImageDPIScalePlugin.js';
-export { default as createImageVerticalAlignPlugin } from './plugins/ImageVerticalAlignPlugin.js';
-export { default as createLineHeightPlugin } from './plugins/LineHeightPlugin.jsx';
-export { default as createMarginTopPlugin } from './plugins/MarginTopPlugin.js';
-export { default as createMathLivePlugin } from './plugins/MathLivePlugin.jsx';
-export { default as createMathSymbolsPlugin } from './plugins/MathSymbolsPlugin.jsx';
-export { default as createQRCodePlugin } from './plugins/QRCodePlugin.jsx';
-export { default as createSearchableDropdownPlugin } from './plugins/SearchableDropdownPlugin.js';
-export { default as createSoftBreakVisibilityPlugin } from './plugins/SoftBreakVisibilityPlugin.js';
-export { default as createTableBorderPlugin } from './plugins/TableBorderPlugin.jsx';
-export { default as createTableCellBaselinePlugin } from './plugins/TableCellBaselinePlugin.js';
-export { default as createTableColumnResizeOverridePlugin } from './plugins/TableColumnResizeOverridePlugin.js';
-export { default as createTextAlignLastPlugin } from './plugins/TextAlignLastPlugin.js';
-export { default as createTextDirectionPlugin } from './plugins/TextDirectionPlugin.jsx';
-export { default as createUnderlineOffsetPlugin } from './plugins/UnderlineOffsetPlugin.js';
+import createAlignmentDefaultPlugin from './plugins/AlignmentDefaultPlugin.js';
+import createCurlyQuotesPlugin from './plugins/CurlyQuotesPlugin.js';
+import createCustomTableColumnResizePlugin from './plugins/CustomTableColumnResizePlugin.js';
+import createFontDropdownLabelsPlugin from './plugins/FontDropdownLabelsPlugin.js';
+import createFontFamilySearchPlugin from './plugins/FontFamilySearchPlugin.js';
+import createFontSizeSearchPlugin from './plugins/FontSizeSearchPlugin.js';
+import createFontSymbolSelectorPlugin from './plugins/FontSymbolSelectorPlugin.jsx';
+import createImageDPIScalePlugin from './plugins/ImageDPIScalePlugin.js';
+import createImageVerticalAlignPlugin from './plugins/ImageVerticalAlignPlugin.js';
+import createLineHeightPlugin from './plugins/LineHeightPlugin.jsx';
+import createMarginTopPlugin from './plugins/MarginTopPlugin.js';
+import createMathLivePlugin from './plugins/MathLivePlugin.jsx';
+import createMathSymbolsPlugin, { setGlobalMathSymbols, getGlobalMathSymbols } from './plugins/MathSymbolsPlugin.jsx';
+import createQRCodePlugin from './plugins/QRCodePlugin.jsx';
+import createSearchableDropdownPlugin from './plugins/SearchableDropdownPlugin.js';
+import createSoftBreakVisibilityPlugin from './plugins/SoftBreakVisibilityPlugin.js';
+import createTableBorderPlugin from './plugins/TableBorderPlugin.jsx';
+import createTableCellBaselinePlugin from './plugins/TableCellBaselinePlugin.js';
+import createTableColumnResizeOverridePlugin from './plugins/TableColumnResizeOverridePlugin.js';
+import createTextAlignLastPlugin from './plugins/TextAlignLastPlugin.js';
+import createTextDirectionPlugin from './plugins/TextDirectionPlugin.jsx';
+import createUnderlineOffsetPlugin from './plugins/UnderlineOffsetPlugin.js';
+
+// Re-export all plugins
+export {
+  createAlignmentDefaultPlugin,
+  createCurlyQuotesPlugin,
+  createCustomTableColumnResizePlugin,
+  createFontDropdownLabelsPlugin,
+  createFontFamilySearchPlugin,
+  createFontSizeSearchPlugin,
+  createFontSymbolSelectorPlugin,
+  createImageDPIScalePlugin,
+  createImageVerticalAlignPlugin,
+  createLineHeightPlugin,
+  createMarginTopPlugin,
+  createMathLivePlugin,
+  createMathSymbolsPlugin,
+  setGlobalMathSymbols,
+  getGlobalMathSymbols,
+  createQRCodePlugin,
+  createSearchableDropdownPlugin,
+  createSoftBreakVisibilityPlugin,
+  createTableBorderPlugin,
+  createTableCellBaselinePlugin,
+  createTableColumnResizeOverridePlugin,
+  createTextAlignLastPlugin,
+  createTextDirectionPlugin,
+  createUnderlineOffsetPlugin
+};
 
 // Editor components
 export { default as RichTextEditor } from './editors/RichTextEditor.jsx';
@@ -34,7 +62,12 @@ export * from './utils/ckeditorUtils.js';
 export * from './utils/dropdownSearchUtils.js';
 
 // Helper to create all plugins at once
-export function createAllPlugins(CKEditor) {
+// Options:
+//   - getAvailableFonts: Function to fetch available fonts (for FontSymbolSelectorPlugin)
+//   - getFontSupportedGlyphs: Function to fetch font glyphs (for FontSymbolSelectorPlugin)
+export function createAllPlugins(CKEditor, options = {}) {
+  const { getAvailableFonts, getFontSupportedGlyphs } = options;
+
   return {
     AlignmentDefaultPlugin: createAlignmentDefaultPlugin(CKEditor),
     CurlyQuotesPlugin: createCurlyQuotesPlugin(CKEditor),
@@ -42,7 +75,7 @@ export function createAllPlugins(CKEditor) {
     FontDropdownLabelsPlugin: createFontDropdownLabelsPlugin(CKEditor),
     FontFamilySearchPlugin: createFontFamilySearchPlugin(CKEditor),
     FontSizeSearchPlugin: createFontSizeSearchPlugin(CKEditor),
-    FontSymbolSelectorPlugin: createFontSymbolSelectorPlugin(CKEditor),
+    FontSymbolSelectorPlugin: createFontSymbolSelectorPlugin(CKEditor, { getAvailableFonts, getFontSupportedGlyphs }),
     ImageDPIScalePlugin: createImageDPIScalePlugin(CKEditor),
     ImageVerticalAlignPlugin: createImageVerticalAlignPlugin(CKEditor),
     LineHeightPlugin: createLineHeightPlugin(CKEditor),

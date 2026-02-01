@@ -55,7 +55,10 @@ const RichTextEditor = ({
   defaultTextAlignment = null,
   variant = 'full', // 'full' | 'slim'
   disabled = false,
-  fontLoader = null // Optional async function that returns array of font names
+  fontLoader = null, // Optional async function that returns array of font names
+  licenseKey = null, // CKEditor license key (required)
+  getAvailableFonts = null, // Optional function for FontSymbolSelector
+  getFontSupportedGlyphs = null // Optional function for FontSymbolSelector
 }) => {
   const [editorValue, setEditorValue] = useState(value);
   const editorRef = useRef(null);
@@ -143,7 +146,7 @@ const RichTextEditor = ({
     ImageDPIScalePlugin: createImageDPIScalePlugin(cloud.CKEditor),
     ImageVerticalAlignPlugin: createImageVerticalAlignPlugin(cloud.CKEditor),
     TableCellBaselinePlugin: createTableCellBaselinePlugin(cloud.CKEditor),
-    FontSymbolSelectorPlugin: createFontSymbolSelectorPlugin(cloud.CKEditor),
+    FontSymbolSelectorPlugin: createFontSymbolSelectorPlugin(cloud.CKEditor, { getAvailableFonts, getFontSupportedGlyphs }),
     UnderlineOffsetPlugin: createUnderlineOffsetPlugin(cloud.CKEditor),
     TableColumnResizeOverridePlugin: createTableColumnResizeOverridePlugin(cloud.CKEditor),
     CustomTableColumnResizePlugin: createCustomTableColumnResizePlugin(cloud.CKEditor),
@@ -156,7 +159,9 @@ const RichTextEditor = ({
   // Get editor configuration from factory
   const { sharedPlugins, sharedDefaultConfig } = createEditorConfig(
     cloud.CKEditor,
-    customPlugins
+    customPlugins,
+    null, // mentionFeeds
+    licenseKey
   );
 
   // Build additional config from utilities

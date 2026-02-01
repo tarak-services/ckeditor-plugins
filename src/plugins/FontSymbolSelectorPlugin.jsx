@@ -5,9 +5,13 @@ import FontSymbolSelectorDialog from './FontSymbolSelectorDialog.jsx';
 /**
  * Factory function to create FontSymbolSelectorPlugin with CKEditor from CDN
  * @param {Object} CKEditor - CKEditor instance from CDN
+ * @param {Object} options - Plugin options
+ * @param {Function} options.getAvailableFonts - Function to fetch available fonts
+ * @param {Function} options.getFontSupportedGlyphs - Function to fetch font glyphs
  * @returns {Class} FontSymbolSelectorPlugin class
  */
-export default function createFontSymbolSelectorPlugin(CKEditor) {
+export default function createFontSymbolSelectorPlugin(CKEditor, options = {}) {
+  const { getAvailableFonts, getFontSupportedGlyphs } = options;
   const { Plugin, ButtonView } = CKEditor;
 
   class FontSymbolSelectorPlugin extends Plugin {
@@ -88,6 +92,8 @@ export default function createFontSymbolSelectorPlugin(CKEditor) {
           isOpen={true}
           onInsert={handleInsert}
           onClose={handleClose}
+          getAvailableFonts={getAvailableFonts}
+          getFontSupportedGlyphs={getFontSupportedGlyphs}
         />
       );
     }

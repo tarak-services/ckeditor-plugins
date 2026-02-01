@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import 'mathlive/fonts.css';
 import 'mathlive';
 import styles from './MathLivePlugin.module.css';
-import mathEditorCss from '../editors/MathLiveEditor.css?inline'; // Import CSS as string
+import mathEditorCss from '../styles/MathLiveEditor.css?inline'; // Import CSS as string
 
 // Suppress ResizeObserver errors (harmless warnings from MathLive keyboard)
 if (typeof window !== 'undefined') {

@@ -10,7 +10,9 @@
     "./editors/*": "./src/editors/*",
     "./hooks/*": "./src/hooks/*",
     "./utils/*": "./src/utils/*",
-    "./styles/*": "./src/styles/*"
+    "./styles/*": "./src/styles/*",
+    "./src/styles/*": "./src/styles/*",
+    "./src/plugins/*": "./src/plugins/*"
   },
   "peerDependencies": {
     "react": "^18.0.0",

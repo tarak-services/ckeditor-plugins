@@ -3,9 +3,10 @@
  * @param {Object} CKEditor - CKEditor instance from CDN
  * @param {Object} customPlugins - Object containing custom plugin classes
  * @param {Array} mentionFeeds - Optional array of mention feeds (only for makesets/subject pages)
+ * @param {string} licenseKey - CKEditor license key (required)
  * @returns {Object} { sharedPlugins, sharedDefaultConfig }
  */
-export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = null) {
+export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = null, licenseKey = null) {
   // Extract all needed CKEditor components
   const {
     Essentials,
@@ -109,7 +110,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
 
   // Shared default configuration
   const sharedDefaultConfig = {
-    licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE_KEY,
+    licenseKey: licenseKey,
     // Force all paste operations to be plain text (Ctrl+V = plain text)
     clipboard: {
       pasteAsPlainText: true

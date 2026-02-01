@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { getAvailableFonts, getFontSupportedGlyphs } from '../../utils/fonts.js';
 import styles from './FontSymbolSelectorPlugin.module.css';
 
-const FontSymbolSelectorDialog = ({ isOpen, onClose, onInsert }) => {
+const FontSymbolSelectorDialog = ({ isOpen, onClose, onInsert, getAvailableFonts, getFontSupportedGlyphs }) => {
   const [fonts, setFonts] = useState([]);
   const [selectedFont, setSelectedFont] = useState('');
   const [characters, setCharacters] = useState([]);
