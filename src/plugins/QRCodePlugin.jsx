@@ -1,4 +1,4 @@
-import QRCode from 'qrcode';
+import * as QRCode from 'qrcode';
 
 /**
  * Utility to dispatch custom alert events that can be caught by AlertContext
