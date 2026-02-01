@@ -1,0 +1,182 @@
+/**
+ * CKEditor Content Output Styles
+ *
+ * These styles apply to CKEditor-generated HTML when rendered outside the editor,
+ * such as in previews, PDFs, or any display context.
+ *
+ * Usage: Import this CSS where you render CKEditor content
+ *   import '@dil/ckeditor-plugins/src/styles/content-output.css';
+ */
+
+/* ==========================================================================
+   Text Alignment Classes
+   ========================================================================== */
+
+.text-align-left {
+  text-align: left;
+}
+
+.text-align-center {
+  text-align: center;
+}
+
+.text-align-right {
+  text-align: right;
+}
+
+.text-align-justify {
+  text-align: justify;
+}
+
+.text-align-last-justify {
+  text-align-last: justify;
+}
+
+/* ==========================================================================
+   Table Styles
+   ========================================================================== */
+
+/* Base table styles */
+.table,
+figure.table {
+  margin: 0;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/* Layout tables - no borders, no padding (used for structure) */
+table.layout-table,
+.layout-table > table {
+  border: none !important;
+  border-collapse: collapse;
+  margin: 0;
+  width: 100%;
+}
+
+table.layout-table td,
+table.layout-table th,
+.layout-table > table td,
+.layout-table > table th {
+  border: none !important;
+  padding: 0 !important;
+  vertical-align: top;
+}
+
+figure.table.layout-table {
+  margin: 0;
+}
+
+/* Content tables - with borders */
+table.content-table td,
+table.content-table th,
+.content-table > table td,
+.content-table > table th {
+  border: 1px solid #bfbfbf;
+  padding: 0.4em;
+}
+
+/* Resized tables maintain fixed layout */
+table.ck-table-resized {
+  table-layout: fixed;
+  width: 100%;
+}
+
+table.ck-table-resized td,
+table.ck-table-resized th {
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* ==========================================================================
+   Image Styles
+   ========================================================================== */
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* QR code images maintain square aspect ratio */
+img[alt^="QR Code:"] {
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+
+/* ==========================================================================
+   Math Formula Styles
+   ========================================================================== */
+
+.math-formula-render {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+p {
+  margin: 0;
+  padding: 0;
+}
+
+/* ==========================================================================
+   Figure Styles
+   ========================================================================== */
+
+figure {
+  margin: 0;
+}
+
+figure.table {
+  display: table;
+}
+
+/* ==========================================================================
+   Line Height (from CKEditor line-height plugin)
+   ========================================================================== */
+
+[style*="line-height"] {
+  /* Inherit line-height from inline style */
+}
+
+/* ==========================================================================
+   Font Styles (from CKEditor font plugins)
+   ========================================================================== */
+
+/* Font family and size are applied via inline styles by CKEditor */
+
+/* ==========================================================================
+   List Styles
+   ========================================================================== */
+
+ul, ol {
+  margin: 0;
+  padding-left: 1.5em;
+}
+
+li {
+  margin: 0;
+}
+
+/* ==========================================================================
+   Mention/Variable Styles
+   ========================================================================== */
+
+/* Variable mention styling in editor and output */
+.mention,
+span[data-mention] {
+  background-color: #e6f4ff;
+  color: #1677ff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
