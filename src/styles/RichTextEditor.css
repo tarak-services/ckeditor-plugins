@@ -1,4 +1,11 @@
-Rich text editor container
+/* CKEditor theme overrides */
+:root {
+  --ck-color-list-button-on-background: #e6f7ff;
+  --ck-color-list-button-on-background-focus: #e6f7ff;
+  --ck-color-list-button-on-text: #000;
+}
+
+/* Rich text editor container */
 .rich-text-editor {
   width: 100%;
   position: relative;
@@ -13,6 +20,23 @@ Rich text editor container
   border: 1px solid #ced4da;
   border-bottom: none;
   border-radius: 4px 4px 0 0;
+  background: #f8f9fa;
+}
+
+/* ==========================================================================
+   Sticky Toolbar (applies to all CKEditor instances)
+   ========================================================================== */
+
+/* Make the editor top section (header + toolbar) sticky */
+.ck.ck-editor__top {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff;
+}
+
+/* Ensure toolbar has proper background when sticky */
+.ck.ck-editor__top .ck-toolbar {
   background: #f8f9fa;
 }
 
@@ -196,7 +220,6 @@ Rich text editor container
 
 /* Editable base styles */
 .ck.ck-editor__editable {
-  overflow: hidden !important;
   font-family: var(--default-font-family, inherit);
   font-size: var(--default-font-size, inherit);
   line-height: var(--default-line-height, inherit);
@@ -339,4 +362,108 @@ Rich text editor container
 .rich-text-editor--disabled .ck.ck-editor__editable {
   background: #f5f5f5;
   cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Mention/Variable Styles (for @ mentions in editor)
+   ========================================================================== */
+
+/* Variable mention styling */
+.ck-content .mention,
+.ck-content span[data-mention] {
+  background-color: #e6f4ff;
+  color: #1677ff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ck-content .mention:hover,
+.ck-content span[data-mention]:hover {
+  background-color: #bae0ff;
+}
+
+/* Mention autocomplete dropdown styling */
+.ck.ck-mentions {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.ck.ck-mentions .ck-list__item {
+  padding: 4px 8px;
+}
+
+.ck.ck-mentions .ck-list__item:hover {
+  background-color: #f5f5f5 !important;
+}
+
+/* Make sure mention item text is visible on selection */
+.ck-list__item .mention-item-name,
+.ck-list__item.ck-on .mention-item-name {
+  color: #1677ff !important;
+}
+
+.ck-list__item .mention-item-desc,
+.ck-list__item.ck-on .mention-item-desc {
+  color: #666 !important;
+}
+
+/* Try to soften the selection background */
+.ck.ck-list .ck-list__item.ck-on {
+  --ck-color-list-button-on-background: #e6f7ff !important;
+  --ck-color-list-button-on-text: #000 !important;
+}
+
+/* ==========================================================================
+   Label-sized Editor (actual label dimensions at 96 DPI)
+   Toolbar is full width, only the editable area is constrained
+   ========================================================================== */
+
+.rich-text-editor--label-size .ck.ck-editor {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-editor-header {
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
+
+.rich-text-editor--label-size .ck.ck-toolbar {
+  width: 100%;
+  position: sticky;
+  top: 37px; /* Height of header */
+  z-index: 100;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: none !important;
+  border-bottom: 1px solid #d9d9d9 !important;
+  border-radius: 0 !important;
+  flex-shrink: 0;
+}
+
+.rich-text-editor--label-size .ck.ck-editor__main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 16px;
+  background: #f5f5f5;
+  border: none;
+  overflow: auto;
+}
+
+.rich-text-editor--label-size .ck.ck-editor__editable.ck-editor__editable_inline {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: #fff;
+  width: var(--editor-content-width, 100%) !important;
+  min-height: var(--editor-content-height, 200px) !important;
+  /* Ensure no double scrollbars */
+  margin-bottom: 16px;
+  border: 1px solid #d9d9d9 !important;
 }
