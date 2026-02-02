@@ -1,5 +1,5 @@
 {
-  "name": "@dil/ckeditor-plugins",
+  "name": "@tarak/ckeditor-plugins",
   "version": "1.0.0",
   "description": "Custom CKEditor 5 plugins and components",
   "type": "module",

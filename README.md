@@ -1,4 +1,4 @@
-# @dil/ckeditor-plugins
+# @tarak/ckeditor-plugins
 
 Custom CKEditor 5 plugins and components for rich text editing.
 
@@ -15,7 +15,7 @@ Or in `package.json`:
 ```json
 {
   "dependencies": {
-    "@dil/ckeditor-plugins": "git+https://github.com/yourorg/ckeditor-plugins.git#main"
+    "@tarak/ckeditor-plugins": "git+https://github.com/yourorg/ckeditor-plugins.git#main"
   }
 }
 ```
@@ -33,9 +33,9 @@ npm install react react-dom @ckeditor/ckeditor5-react
 ### Quick Start with RichTextEditor Component
 
 ```jsx
-import { RichTextEditor } from '@dil/ckeditor-plugins';
-import '@dil/ckeditor-plugins/src/styles/RichTextEditor.css';
-import '@dil/ckeditor-plugins/src/styles/MathLiveEditor.css';
+import { RichTextEditor } from '@tarak/ckeditor-plugins';
+import '@tarak/ckeditor-plugins/src/styles/RichTextEditor.css';
+import '@tarak/ckeditor-plugins/src/styles/MathLiveEditor.css';
 
 function MyEditor() {
   const [content, setContent] = useState('');
@@ -55,7 +55,7 @@ function MyEditor() {
 ### With Custom Font Loader
 
 ```jsx
-import { RichTextEditor } from '@dil/ckeditor-plugins';
+import { RichTextEditor } from '@tarak/ckeditor-plugins';
 
 // Your custom function to fetch fonts from your API
 const loadFonts = async () => {
@@ -84,7 +84,7 @@ import {
   createLineHeightPlugin,
   createEditorConfig,
   createAllPlugins
-} from '@dil/ckeditor-plugins';
+} from '@tarak/ckeditor-plugins';
 
 function CustomEditor() {
   const cloud = useCKEditorCloud({ version: '47.2.0', premium: true });
@@ -165,8 +165,8 @@ This package requires a CKEditor license. Each project using this package needs:
 
 ```bash
 # Force reinstall latest from git
-npm install @dil/ckeditor-plugins@git+https://github.com/yourorg/ckeditor-plugins.git#main --force
+npm install @tarak/ckeditor-plugins@git+https://github.com/yourorg/ckeditor-plugins.git#main --force
 
 # Or pin to a specific tag
-npm install @dil/ckeditor-plugins@git+https://github.com/yourorg/ckeditor-plugins.git#v1.0.0
+npm install @tarak/ckeditor-plugins@git+https://github.com/yourorg/ckeditor-plugins.git#v1.0.0
 ```

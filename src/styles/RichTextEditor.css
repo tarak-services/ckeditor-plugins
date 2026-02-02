@@ -463,6 +463,7 @@
   background: #fff;
   width: var(--editor-content-width, 100%) !important;
   min-height: var(--editor-content-height, 200px) !important;
+  padding: var(--editor-content-padding, 0) !important;
   /* Ensure no double scrollbars */
   margin-bottom: 16px;
   border: 1px solid #d9d9d9 !important;

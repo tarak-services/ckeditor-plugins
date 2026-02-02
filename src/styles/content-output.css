@@ -5,7 +5,7 @@
  * such as in previews, PDFs, or any display context.
  *
  * Usage: Import this CSS where you render CKEditor content
- *   import '@dil/ckeditor-plugins/src/styles/content-output.css';
+ *   import '@tarak/ckeditor-plugins/src/styles/content-output.css';
  */
 
 /* ==========================================================================
@@ -49,7 +49,7 @@ table {
 /* Layout tables - no borders, no padding (used for structure) */
 table.layout-table,
 .layout-table > table {
-  border: none !important;
+  border: none;
   border-collapse: collapse;
   margin: 0;
   width: 100%;
@@ -59,8 +59,8 @@ table.layout-table td,
 table.layout-table th,
 .layout-table > table td,
 .layout-table > table th {
-  border: none !important;
-  padding: 0 !important;
+  border: none;
+  padding: 0;
   vertical-align: top;
 }
 
