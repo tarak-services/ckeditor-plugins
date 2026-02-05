@@ -316,10 +316,17 @@ export default function createMathLivePlugin(CKEditor) {
       if (convertLatexToMarkup) {
         try {
           // Apply cfrac transformation for consistent fraction sizing
-          const latexWithCfrac = this._replaceFracWithTightCfrac(latex);
-          // Apply compact spacing around operators like \cdot
-          const latexToRender = this._applyCompactSpacing(latexWithCfrac);
-          const markup = convertLatexToMarkup(latexToRender, { letterShapeStyle: 'upright' });
+          const latexToRender = this._replaceFracWithTightCfrac(latex);
+          const markup = convertLatexToMarkup(latexToRender, {
+            letterShapeStyle: 'upright',
+            defaultMode: 'inline-math',
+            registers: {
+              thinmuskip: { dimension: 0, unit: 'mu' },
+              medmuskip: { dimension: 0, unit: 'mu' },
+              thickmuskip: { dimension: 0, unit: 'mu' },
+              nulldelimiterspace: { dimension: 0, unit: 'mu' }
+            }
+          });
           element.innerHTML = markup;
         } catch (e) {
           this._renderFallback(element, latex);
@@ -328,45 +335,6 @@ export default function createMathLivePlugin(CKEditor) {
         // convertLatexToMarkup not loaded yet, use fallback
         this._renderFallback(element, latex);
       }
-    }
-
-    /**
-     * Apply compact spacing to reduce horizontal gaps around operators.
-     * - Removes extra space around \cdot (multiplication dot)
-     * - Tightens spacing in mixed fractions
-     */
-    _applyCompactSpacing(latex) {
-      let result = latex;
-      
-      // Replace \cdot with tighter spacing: use \!\cdot\! (negative thin spaces)
-      // This removes the default binary operator spacing around the dot
-      result = result.replace(/\\cdot/g, '\\!\\cdot\\!');
-      
-      // MathLive uses \, (thin space) around operators, so we need to match that
-      // Pattern for mixed fractions: 1\,+\,1\,\cfrac{...}
-      // We want to reduce excessive spacing to single negative thin space \!
-      
-      // Remove \, before and after + when followed by a digit and fraction
-      // This handles: 1\,+\,1\,\cfrac -> 1+1\!\cfrac (one negative thin space before fraction)
-      result = result.replace(/(\d)\\,\+\\,(\d)\\,(\\[cdt]?frac)/g, '$1+$2\\!$3');
-      
-      // Handle digit \, fraction - replace with single negative thin space
-      result = result.replace(/(\d)\\,(\\[cdt]?frac)/g, '$1\\!$2');
-      
-      // Handle + or - with \, spacing before fractions - reduce to single negative thin space
-      // e.g., \,+\,\cfrac -> +\!\cfrac
-      result = result.replace(/\\,\+\\,(\\[cdt]?frac)/g, '+\\!$1');
-      result = result.replace(/\\,[-–]\\,(\\[cdt]?frac)/g, '-\\!$1');
-      
-      // Replace remaining \, before fractions with \!
-      result = result.replace(/\\,(\\[cdt]?frac)/g, '\\!$1');
-      
-      // Add negative thin space after numbers/closing parens/braces before fractions (if no space)
-      result = result.replace(/(\d)(\\[cdt]?frac)/g, '$1\\!$2');
-      result = result.replace(/(\))(\\[cdt]?frac)/g, '$1\\!$2');
-      result = result.replace(/(})(\\[cdt]?frac)/g, '$1\\!$2');
-      
-      return result;
     }
 
     /**

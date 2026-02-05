@@ -33,6 +33,16 @@ const MathLiveDialog = ({ isOpen, initialLatex, onInsert, onClose }) => {
     element.smartSuperscript = true;
     element.letterShapeStyle = 'upright'; // Use normal font instead of italics
 
+    // Set tighter spacing for compact math display
+    // - medmuskip: space around binary operators (default 4mu) - affects \cdot, +, -, etc.
+    // - thinmuskip: thin space amount (default 3mu) - affects \, spacing in mixed fractions
+    element.registers = {
+      thinmuskip: '0mu',
+      medmuskip: '0mu',
+      thickmuskip: '0mu',
+      nulldelimiterspace: '0mu'
+    };
+
     // Inject custom CSS into shadow DOM to override MathLive defaults
     const style = document.createElement('style');
     style.textContent = mathEditorCss;
