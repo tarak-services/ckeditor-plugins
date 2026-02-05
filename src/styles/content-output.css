@@ -171,12 +171,31 @@ li {
 
 /* Variable mention styling in editor and output */
 .mention,
-span[data-mention] {
+span[data-mention]:not(.mention-preview) {
   background-color: #e6f4ff;
   color: #1677ff;
   padding: 1px 4px;
   border-radius: 3px;
-  font-family: monospace;
-  font-size: 0.9em;
-  white-space: nowrap;
+  /* Allow text wrapping */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  display: inline;
+}
+
+/* Max Preview mode - plain text that looks exactly like final output */
+.mention-preview {
+  background: none !important;
+  color: inherit !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-weight: inherit !important;
+  /* Allow text wrapping */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  display: inline;
 }

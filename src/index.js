@@ -1,5 +1,6 @@
 // Plugins - Factory functions that create CKEditor plugins
 import createAlignmentDefaultPlugin from './plugins/AlignmentDefaultPlugin.js';
+import createBarcodePlugin from './plugins/BarcodePlugin.jsx';
 import createCurlyQuotesPlugin from './plugins/CurlyQuotesPlugin.js';
 import createCustomTableColumnResizePlugin from './plugins/CustomTableColumnResizePlugin.js';
 import createFontDropdownLabelsPlugin from './plugins/FontDropdownLabelsPlugin.js';
@@ -25,6 +26,7 @@ import createUnderlineOffsetPlugin from './plugins/UnderlineOffsetPlugin.js';
 // Re-export all plugins
 export {
   createAlignmentDefaultPlugin,
+  createBarcodePlugin,
   createCurlyQuotesPlugin,
   createCustomTableColumnResizePlugin,
   createFontDropdownLabelsPlugin,
@@ -70,6 +72,7 @@ export function createAllPlugins(CKEditor, options = {}) {
 
   return {
     AlignmentDefaultPlugin: createAlignmentDefaultPlugin(CKEditor),
+    BarcodePlugin: createBarcodePlugin(CKEditor),
     CurlyQuotesPlugin: createCurlyQuotesPlugin(CKEditor),
     CustomTableColumnResizePlugin: createCustomTableColumnResizePlugin(CKEditor),
     FontDropdownLabelsPlugin: createFontDropdownLabelsPlugin(CKEditor),

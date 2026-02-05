@@ -316,7 +316,9 @@ export default function createMathLivePlugin(CKEditor) {
       if (convertLatexToMarkup) {
         try {
           // Apply cfrac transformation for consistent fraction sizing
-          const latexToRender = this._replaceFracWithTightCfrac(latex);
+          const latexWithCfrac = this._replaceFracWithTightCfrac(latex);
+          // Apply compact spacing around operators like \cdot
+          const latexToRender = this._applyCompactSpacing(latexWithCfrac);
           const markup = convertLatexToMarkup(latexToRender, { letterShapeStyle: 'upright' });
           element.innerHTML = markup;
         } catch (e) {
@@ -329,7 +331,95 @@ export default function createMathLivePlugin(CKEditor) {
     }
 
     /**
-     * Process fractions:
+     * Apply compact spacing to reduce horizontal gaps around operators.
+     * - Removes extra space around \cdot (multiplication dot)
+     * - Tightens spacing in mixed fractions
+     */
+    _applyCompactSpacing(latex) {
+      let result = latex;
+      
+      // Debug: log the input latex to see what we're working with
+      console.log('[MathLive] Input LaTeX:', latex);
+      
+      // Replace \cdot with tighter spacing: use \!\cdot\! (negative thin spaces)
+      // This removes the default binary operator spacing around the dot
+      result = result.replace(/\\cdot/g, '\\!\\cdot\\!');
+      
+      // MathLive uses \, (thin space) around operators, so we need to match that
+      // Pattern for mixed fractions: 1\,+\,1\,\cfrac{...}
+      // We want to reduce excessive spacing to single negative thin space \!
+      
+      // Remove \, before and after + when followed by a digit and fraction
+      // This handles: 1\,+\,1\,\cfrac -> 1+1\!\cfrac (one negative thin space before fraction)
+      result = result.replace(/(\d)\\,\+\\,(\d)\\,(\\[cdt]?frac)/g, '$1+$2\\!$3');
+      
+      // Handle digit \, fraction - replace with single negative thin space
+      result = result.replace(/(\d)\\,(\\[cdt]?frac)/g, '$1\\!$2');
+      
+      // Handle + or - with \, spacing before fractions - reduce to single negative thin space
+      // e.g., \,+\,\cfrac -> +\!\cfrac
+      result = result.replace(/\\,\+\\,(\\[cdt]?frac)/g, '+\\!$1');
+      result = result.replace(/\\,[-–]\\,(\\[cdt]?frac)/g, '-\\!$1');
+      
+      // Replace remaining \, before fractions with \!
+      result = result.replace(/\\,(\\[cdt]?frac)/g, '\\!$1');
+      
+      // Add negative thin space after numbers/closing parens/braces before fractions (if no space)
+      result = result.replace(/(\d)(\\[cdt]?frac)/g, '$1\\!$2');
+      result = result.replace(/(\))(\\[cdt]?frac)/g, '$1\\!$2');
+      result = result.replace(/(})(\\[cdt]?frac)/g, '$1\\!$2');
+      
+      console.log('[MathLive] Output LaTeX:', result);
+      
+      return result;
+    }
+
+    /**
+     * Process fractions for compact (textstyle) rendering:
+     * Convert \frac to \tfrac for consistent compact fraction display
+     */
+    _replaceFracWithTfrac(latex) {
+      let result = latex;
+      let changed = true;
+
+      // Keep processing until no more \frac remain
+      while (changed) {
+        changed = false;
+        let pos = 0;
+
+        while (pos < result.length) {
+          const fracIndex = result.indexOf('\\frac', pos);
+          if (fracIndex === -1) break;
+
+          // Skip \cfrac, \dfrac, and \tfrac
+          if (fracIndex > 0 && (result[fracIndex - 1] === 'c' || result[fracIndex - 1] === 'd' || result[fracIndex - 1] === 't')) {
+            pos = fracIndex + 5;
+            continue;
+          }
+
+          // Parse arguments
+          const parsed = this._parseFracArgs(result, fracIndex + 5);
+          if (!parsed) {
+            pos = fracIndex + 5;
+            continue;
+          }
+
+          const { firstArg, secondArg, endPos } = parsed;
+
+          // Convert to \tfrac for compact text-style fraction
+          const replacement = `\\tfrac{${firstArg}}{${secondArg}}`;
+
+          result = result.substring(0, fracIndex) + replacement + result.substring(endPos);
+          changed = true;
+          break; // Restart from beginning to catch nested fracs
+        }
+      }
+
+      return result;
+    }
+
+    /**
+     * Process fractions for display style rendering:
      * 1. Simple numeric fractions (only digits) → \cfrac with \raisebox for tighter spacing
      * 2. All other fractions → just \frac to \cfrac (no raisebox)
      */

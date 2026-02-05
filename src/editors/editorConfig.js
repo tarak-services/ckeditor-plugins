@@ -88,6 +88,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     ...(customPlugins.MathLivePlugin ? [customPlugins.MathLivePlugin] : []),
     ...(customPlugins.TableBorderPlugin ? [customPlugins.TableBorderPlugin] : []),
     ...(customPlugins.QRCodePlugin ? [customPlugins.QRCodePlugin] : []),
+    ...(customPlugins.BarcodePlugin ? [customPlugins.BarcodePlugin] : []),
     ...(customPlugins.FontFamilySearchPlugin ? [customPlugins.FontFamilySearchPlugin] : []),
     ...(customPlugins.FontSizeSearchPlugin ? [customPlugins.FontSizeSearchPlugin] : []),
     ...(customPlugins.LineHeightPlugin ? [customPlugins.LineHeightPlugin] : []),

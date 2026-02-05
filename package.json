@@ -15,11 +15,12 @@
     "./src/plugins/*": "./src/plugins/*"
   },
   "peerDependencies": {
+    "@ckeditor/ckeditor5-react": "^11.0.0",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "@ckeditor/ckeditor5-react": "^11.0.0"
+    "react-dom": "^18.0.0"
   },
   "dependencies": {
+    "jsbarcode": "^3.12.3",
     "mathlive": "^0.108.2",
     "qrcode": "^1.5.4"
   },

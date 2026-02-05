@@ -44,6 +44,80 @@ export default function createQRCodePlugin(CKEditor) {
   init() {
     const editor = this.editor;
 
+    // Configure schema to allow custom QR code attributes on images
+    const schema = editor.model.schema;
+
+    // Allow data-qrcode-value and data-qrcode-size on imageInline
+    schema.extend('imageInline', {
+      allowAttributes: ['data-qrcode-value', 'data-qrcode-size']
+    });
+
+    // Also allow on imageBlock if it exists
+    if (schema.isRegistered('imageBlock')) {
+      schema.extend('imageBlock', {
+        allowAttributes: ['data-qrcode-value', 'data-qrcode-size']
+      });
+    }
+
+    // Set up converters to preserve these attributes in the HTML output
+    const conversion = editor.conversion;
+
+    // Downcast (model -> view): Add attributes to the img element
+    conversion.for('downcast').add(dispatcher => {
+      dispatcher.on('attribute:data-qrcode-value:imageInline', (evt, data, conversionApi) => {
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
+        const viewWriter = conversionApi.writer;
+        const img = conversionApi.mapper.toViewElement(data.item);
+        if (img) {
+          if (data.attributeNewValue) {
+            viewWriter.setAttribute('data-qrcode-value', data.attributeNewValue, img);
+          } else {
+            viewWriter.removeAttribute('data-qrcode-value', img);
+          }
+        }
+      });
+
+      dispatcher.on('attribute:data-qrcode-size:imageInline', (evt, data, conversionApi) => {
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
+        const viewWriter = conversionApi.writer;
+        const img = conversionApi.mapper.toViewElement(data.item);
+        if (img) {
+          if (data.attributeNewValue) {
+            viewWriter.setAttribute('data-qrcode-size', data.attributeNewValue, img);
+          } else {
+            viewWriter.removeAttribute('data-qrcode-size', img);
+          }
+        }
+      });
+    });
+
+    // Upcast (view -> model): Read attributes from the img element
+    conversion.for('upcast').add(dispatcher => {
+      dispatcher.on('element:img', (evt, data, conversionApi) => {
+        const viewItem = data.viewItem;
+        const modelRange = data.modelRange;
+
+        if (!modelRange) return;
+
+        const modelElement = modelRange.start.nodeAfter;
+        if (!modelElement) return;
+
+        const qrValue = viewItem.getAttribute('data-qrcode-value');
+        const qrSize = viewItem.getAttribute('data-qrcode-size');
+
+        if (qrValue) {
+          conversionApi.writer.setAttribute('data-qrcode-value', qrValue, modelElement);
+        }
+        if (qrSize) {
+          conversionApi.writer.setAttribute('data-qrcode-size', qrSize, modelElement);
+        }
+      }, { priority: 'low' });
+    });
+
     // Add QR code button to toolbar
     editor.ui.componentFactory.add('insertQRCode', locale => {
       const view = new ButtonView(locale);
@@ -201,6 +275,9 @@ export default function createQRCodePlugin(CKEditor) {
     const initialSize = editOptions?.size || 15;
     const existingImageElement = editOptions?.imageElement || null;
 
+    // Get variables from editor config (qrCodeVariables or from mention config)
+    const qrCodeVariables = editor.config.get('qrCodeVariables') || [];
+
     // Escape HTML to prevent XSS
     const escapeHtml = (text) => {
       const div = document.createElement('div');
@@ -229,17 +306,20 @@ export default function createQRCodePlugin(CKEditor) {
       padding: 24px;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      min-width: 400px;
-      max-width: 500px;
+      min-width: 450px;
+      max-width: 550px;
     `;
+
+    const hasVariables = qrCodeVariables.length > 0;
 
     dialog.innerHTML = `
       <h2 style="margin: 0 0 20px 0; font-size: 20px; font-weight: 600;">${isEditing ? 'Edit QR Code' : 'Insert QR Code'}</h2>
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Text/URL:</label>
-        <input type="text" id="qrcode-text" placeholder="Enter text or URL..."
+      <div style="margin-bottom: 16px; position: relative;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Text/URL:${hasVariables ? ' <span style="font-weight: normal; color: #666; font-size: 12px;">(Type @ to insert variables)</span>' : ''}</label>
+        <input type="text" id="qrcode-text" placeholder="${hasVariables ? 'Type @ to insert variables, e.g. @parcel_id' : 'Enter text or URL...'}"
                value="${escapeHtml(initialText)}"
-               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
+               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" autocomplete="off" />
+        <div id="qrcode-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10001;"></div>
       </div>
       <div style="margin-bottom: 20px;">
         <label style="display: block; margin-bottom: 8px; font-weight: 500;">Size (pixels):</label>
@@ -259,6 +339,150 @@ export default function createQRCodePlugin(CKEditor) {
     const sizeInput = dialog.querySelector('#qrcode-size');
     const cancelBtn = dialog.querySelector('#qrcode-cancel');
     const insertBtn = dialog.querySelector('#qrcode-insert');
+    const dropdown = dialog.querySelector('#qrcode-dropdown');
+
+    // Variable autocomplete state
+    let selectedIndex = -1;
+    let filteredVariables = [];
+    let mentionStartPos = -1;
+
+    const showDropdown = (variables) => {
+      filteredVariables = variables;
+      selectedIndex = variables.length > 0 ? 0 : -1;
+
+      if (variables.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+      }
+
+      dropdown.innerHTML = variables.map((v, idx) => `
+        <div class="qrcode-var-item" data-index="${idx}" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; ${idx === selectedIndex ? 'background: #e6f4ff;' : ''}">
+          <div style="font-weight: 500; color: #1677ff;">@${escapeHtml(v.key)}</div>
+          <div style="font-size: 11px; color: #666;">${escapeHtml(v.label || v.key)}</div>
+        </div>
+      `).join('');
+      dropdown.style.display = 'block';
+
+      // Add click handlers
+      dropdown.querySelectorAll('.qrcode-var-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const idx = parseInt(item.dataset.index, 10);
+          selectVariable(filteredVariables[idx]);
+        });
+        item.addEventListener('mouseenter', () => {
+          selectedIndex = parseInt(item.dataset.index, 10);
+          updateDropdownHighlight();
+        });
+      });
+    };
+
+    const hideDropdown = () => {
+      dropdown.style.display = 'none';
+      filteredVariables = [];
+      selectedIndex = -1;
+      mentionStartPos = -1;
+    };
+
+    const updateDropdownHighlight = () => {
+      dropdown.querySelectorAll('.qrcode-var-item').forEach((item, idx) => {
+        item.style.background = idx === selectedIndex ? '#e6f4ff' : '';
+      });
+    };
+
+    const selectVariable = (variable) => {
+      if (!variable) return;
+
+      const value = textInput.value;
+      const beforeMention = value.substring(0, mentionStartPos);
+      const afterCursor = value.substring(textInput.selectionStart);
+
+      textInput.value = beforeMention + '@' + variable.key + afterCursor;
+      const newPos = beforeMention.length + variable.key.length + 1;
+      textInput.setSelectionRange(newPos, newPos);
+      textInput.focus();
+      hideDropdown();
+    };
+
+    // Handle input for @ mentions
+    const handleInput = () => {
+      if (!hasVariables) return;
+
+      const value = textInput.value;
+      const cursorPos = textInput.selectionStart;
+
+      // Find the @ symbol before cursor
+      let atPos = -1;
+      for (let i = cursorPos - 1; i >= 0; i--) {
+        if (value[i] === '@') {
+          atPos = i;
+          break;
+        }
+        // Stop if we hit a space or special char (not part of variable name)
+        if (value[i] === ' ' || value[i] === '\n' || value[i] === '\t') {
+          break;
+        }
+      }
+
+      if (atPos === -1) {
+        hideDropdown();
+        return;
+      }
+
+      mentionStartPos = atPos;
+      const searchText = value.substring(atPos + 1, cursorPos).toLowerCase();
+
+      // Filter variables
+      const matches = qrCodeVariables.filter(v =>
+        v.key.toLowerCase().includes(searchText) ||
+        (v.label && v.label.toLowerCase().includes(searchText))
+      );
+
+      showDropdown(matches);
+    };
+
+    textInput.addEventListener('input', handleInput);
+
+    // Handle keyboard navigation in dropdown
+    textInput.addEventListener('keydown', (e) => {
+      if (dropdown.style.display === 'none') {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          insertQRCode();
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, filteredVariables.length - 1);
+        updateDropdownHighlight();
+        // Scroll into view
+        const item = dropdown.children[selectedIndex];
+        if (item) item.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, 0);
+        updateDropdownHighlight();
+        const item = dropdown.children[selectedIndex];
+        if (item) item.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        if (selectedIndex >= 0 && filteredVariables[selectedIndex]) {
+          e.preventDefault();
+          selectVariable(filteredVariables[selectedIndex]);
+        }
+      } else if (e.key === 'Escape') {
+        hideDropdown();
+      }
+    });
+
+    // Hide dropdown on blur (with delay to allow click)
+    textInput.addEventListener('blur', () => {
+      setTimeout(() => {
+        if (!dropdown.contains(document.activeElement)) {
+          hideDropdown();
+        }
+      }, 150);
+    });
 
     // Focus on text input and select all if editing
     textInput.focus();
@@ -284,7 +508,12 @@ export default function createQRCodePlugin(CKEditor) {
         return;
       }
 
-      const dataUrl = await QRCode.toDataURL(text, {
+      // For preview in editor, generate a placeholder QR if there are variables
+      // The actual QR will be regenerated at render time with real values
+      const hasVars = text.includes('@');
+      const qrText = hasVars ? 'DYNAMIC-QR-PLACEHOLDER' : text;
+
+      const dataUrl = await QRCode.toDataURL(qrText, {
         width: size,
         margin: 0,
         color: {
@@ -364,8 +593,12 @@ export default function createQRCodePlugin(CKEditor) {
     // Close on escape key
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
-        closeModal();
-        document.removeEventListener('keydown', handleEscape);
+        if (dropdown.style.display !== 'none') {
+          hideDropdown();
+        } else {
+          closeModal();
+          document.removeEventListener('keydown', handleEscape);
+        }
       }
     };
     document.addEventListener('keydown', handleEscape);
@@ -405,14 +638,6 @@ export default function createQRCodePlugin(CKEditor) {
     // Prevent clicks inside dialog from closing the modal
     dialog.addEventListener('click', (e) => {
       e.stopPropagation();
-    });
-
-    // Handle Enter key in text input
-    textInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        insertQRCode();
-      }
     });
   }
   }

@@ -375,15 +375,35 @@
   color: #1677ff;
   padding: 1px 4px;
   border-radius: 3px;
-  font-family: monospace;
-  font-size: 0.9em;
-  white-space: nowrap;
   cursor: pointer;
+  /* Allow text wrapping */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  display: inline;
 }
 
 .ck-content .mention:hover,
 .ck-content span[data-mention]:hover {
   background-color: #bae0ff;
+}
+
+/* Max Preview mode - plain text that looks exactly like final output */
+.ck-content .mention-preview {
+  /* Reset all mention-like styling to look like normal text */
+  background: none !important;
+  color: inherit !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-weight: inherit !important;
+  /* Allow text wrapping */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  display: inline;
 }
 
 /* Mention autocomplete dropdown styling */
