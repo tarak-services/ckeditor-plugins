@@ -338,9 +338,6 @@ export default function createMathLivePlugin(CKEditor) {
     _applyCompactSpacing(latex) {
       let result = latex;
       
-      // Debug: log the input latex to see what we're working with
-      console.log('[MathLive] Input LaTeX:', latex);
-      
       // Replace \cdot with tighter spacing: use \!\cdot\! (negative thin spaces)
       // This removes the default binary operator spacing around the dot
       result = result.replace(/\\cdot/g, '\\!\\cdot\\!');
@@ -368,8 +365,6 @@ export default function createMathLivePlugin(CKEditor) {
       result = result.replace(/(\d)(\\[cdt]?frac)/g, '$1\\!$2');
       result = result.replace(/(\))(\\[cdt]?frac)/g, '$1\\!$2');
       result = result.replace(/(})(\\[cdt]?frac)/g, '$1\\!$2');
-      
-      console.log('[MathLive] Output LaTeX:', result);
       
       return result;
     }
