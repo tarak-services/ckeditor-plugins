@@ -54,48 +54,31 @@ export default function createImageDPIScalePlugin(CKEditor) {
       const selection = editor.model.document.selection;
       const selectedElement = selection.getSelectedElement();
 
-      // Check if an image is selected
       if (!selectedElement ||
           (selectedElement.name !== 'imageInline' && selectedElement.name !== 'imageBlock')) {
         return;
       }
 
-      // Skip QR code images
       const alt = selectedElement.getAttribute('alt') || '';
       if (alt.startsWith('QR Code:')) {
         return;
       }
 
-      // Get the image source
       const src = selectedElement.getAttribute('src');
       if (!src) {
         return;
       }
 
-      // Load the image to get its natural dimensions
       this._getImageDimensions(src).then(dimensions => {
         if (!dimensions) return;
+        if (!editor || editor.state === 'destroyed') return;
 
-        // Check if editor is still valid
-        if (!editor || editor.state === 'destroyed') {
-          return;
-        }
+        const scaledWidth = Math.round(dimensions.naturalWidth * SCALE_FACTOR);
 
-        const { naturalWidth } = dimensions;
-
-        // Calculate scaled width for 96 DPI display
-        const scaledWidth = Math.round(naturalWidth * SCALE_FACTOR);
-
-        // Apply the scaled width to the image
         try {
-          editor.model.change(writer => {
-            // Check if the element still exists in the model
-            if (selectedElement.parent) {
-              writer.setAttribute('resizedWidth', `${scaledWidth}px`, selectedElement);
-            }
-          });
+          editor.execute('resizeImage', { width: `${scaledWidth}px` });
         } catch (error) {
-          console.error('Error scaling image:', error);
+          console.error('[DPI Scale] Error scaling image:', error);
         }
       });
     }

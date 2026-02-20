@@ -170,6 +170,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
       insert: {
         type: 'inline'
       },
+      resizeUnit: 'px',
       toolbar: [
         'imageTextAlternative',
         '|',
