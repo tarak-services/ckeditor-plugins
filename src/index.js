@@ -67,8 +67,9 @@ export * from './utils/dropdownSearchUtils.js';
 // Options:
 //   - getAvailableFonts: Function to fetch available fonts (for FontSymbolSelectorPlugin)
 //   - getFontSupportedGlyphs: Function to fetch font glyphs (for FontSymbolSelectorPlugin)
+//   - mathRenderFormat: 'markup' (default) or 'mathml' — controls MathLive output format
 export function createAllPlugins(CKEditor, options = {}) {
-  const { getAvailableFonts, getFontSupportedGlyphs, mathLiveFonts } = options;
+  const { getAvailableFonts, getFontSupportedGlyphs, mathLiveFonts, mathRenderFormat } = options;
 
   return {
     AlignmentDefaultPlugin: createAlignmentDefaultPlugin(CKEditor),
@@ -83,7 +84,7 @@ export function createAllPlugins(CKEditor, options = {}) {
     ImageVerticalAlignPlugin: createImageVerticalAlignPlugin(CKEditor),
     LineHeightPlugin: createLineHeightPlugin(CKEditor),
     MarginTopPlugin: createMarginTopPlugin(CKEditor),
-    MathLivePlugin: createMathLivePlugin(CKEditor, { availableFonts: mathLiveFonts, getAvailableFonts }),
+    MathLivePlugin: createMathLivePlugin(CKEditor, { availableFonts: mathLiveFonts, getAvailableFonts, mathRenderFormat }),
     MathSymbolsPlugin: createMathSymbolsPlugin(CKEditor),
     QRCodePlugin: createQRCodePlugin(CKEditor),
     SoftBreakVisibilityPlugin: createSoftBreakVisibilityPlugin(CKEditor),

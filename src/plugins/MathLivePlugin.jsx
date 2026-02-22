@@ -26,7 +26,7 @@ import('mathlive').then(ml => {
  */
 export default function createMathLivePlugin(CKEditor, options = {}) {
   const { Plugin, ButtonView, Widget, toWidget } = CKEditor;
-  const { availableFonts, getAvailableFonts } = options;
+  const { availableFonts, getAvailableFonts, mathRenderFormat = 'markup' } = options;
 
   class MathLivePlugin extends Plugin {
     static get pluginName() {
@@ -113,7 +113,7 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         allowWhere: '$text',
         isInline: true,
         isObject: true,
-        allowAttributes: ['latex', 'display']
+        allowAttributes: ['latex', 'display', 'renderFormat']
       });
     }
 
@@ -128,20 +128,19 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
           classes: 'math-tex'
         },
         model: (viewElement, { writer }) => {
-          // First try data-latex attribute (from our dataDowncast output)
           let latex = viewElement.getAttribute('data-latex') || '';
-          // Fallback to text content for legacy format
           if (!latex) {
             latex = viewElement.getChild(0)?.data || '';
           }
+          const format = viewElement.getAttribute('data-render-format') || mathRenderFormat;
           return writer.createElement('mathFormula', {
-            latex: latex,
-            display: 'inline'
+            latex,
+            display: 'inline',
+            renderFormat: format
           });
         }
       });
 
-      // Also support the widget class (for copy/paste within editor)
       conversion.for('upcast').elementToElement({
         view: {
           name: 'span',
@@ -149,9 +148,11 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         },
         model: (viewElement, { writer }) => {
           const latex = viewElement.getAttribute('data-latex') || '';
+          const format = viewElement.getAttribute('data-render-format') || mathRenderFormat;
           return writer.createElement('mathFormula', {
-            latex: latex,
-            display: 'inline'
+            latex,
+            display: 'inline',
+            renderFormat: format
           });
         }
       });
@@ -173,23 +174,23 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         }
       });
 
-      // Editing downcast - Show rendered math in editor
       conversion.for('editingDowncast').elementToElement({
         model: 'mathFormula',
         view: (modelElement, { writer }) => {
           const latex = modelElement.getAttribute('latex') || '';
+          const format = modelElement.getAttribute('renderFormat') || mathRenderFormat;
 
           const span = writer.createContainerElement('span', {
             class: 'math-formula-widget',
-            'data-latex': latex
+            'data-latex': latex,
+            'data-render-format': format
           });
 
           const mathSpan = writer.createRawElement('span', {
             class: 'math-formula-render',
             style: 'display: inline-block; vertical-align: baseline;'
           }, (domElement) => {
-            // Render using MathLive's markup (same as mathfield display)
-            this._renderMath(domElement, latex);
+            this._renderMath(domElement, latex, format);
           });
 
           writer.insert(writer.createPositionAt(span, 0), mathSpan);
@@ -198,24 +199,22 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         }
       });
 
-      // Data downcast - Output styled markup with LaTeX preserved
       conversion.for('dataDowncast').elementToElement({
         model: 'mathFormula',
         view: (modelElement, { writer }) => {
           const latex = modelElement.getAttribute('latex') || '';
+          const format = modelElement.getAttribute('renderFormat') || mathRenderFormat;
 
-          // Output as <span class="math-tex" data-latex="...">rendered content</span>
-          // Use containerElement so attributes are preserved for clipboard/upcast
           const span = writer.createContainerElement('span', {
             class: 'math-tex',
-            'data-latex': latex
+            'data-latex': latex,
+            'data-render-format': format
           });
 
-          // Add rendered content as raw element inside
           const renderedContent = writer.createRawElement('span', {
             class: 'math-formula-render'
           }, (domElement) => {
-            this._renderMath(domElement, latex);
+            this._renderMath(domElement, latex, format);
           });
 
           writer.insert(writer.createPositionAt(span, 0), renderedContent);
@@ -258,9 +257,9 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         }, 0);
       };
 
-      const handleInsert = (latex) => {
+      const handleInsert = (latex, format) => {
         if (latex !== null && latex !== undefined) {
-          this._insertMath(editor, latex, selectedElement);
+          this._insertMath(editor, latex, selectedElement, format);
         }
       };
 
@@ -268,12 +267,14 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         cleanup();
       };
 
-      // Render the React dialog with error boundary
+      const existingFormat = selectedElement?.getAttribute('renderFormat') || mathRenderFormat;
+
       root.render(
         <MathLiveErrorBoundary>
           <MathLiveDialog
             isOpen={true}
             initialLatex={currentLatex}
+            initialRenderFormat={existingFormat}
             onInsert={handleInsert}
             onClose={handleClose}
             availableFonts={availableFonts}
@@ -283,61 +284,60 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
       );
     }
 
-    _insertMath(editor, latex, existingElement) {
+    _insertMath(editor, latex, existingElement, format) {
+      const renderFmt = format || mathRenderFormat;
       editor.model.change(writer => {
+        const attrs = { latex, display: 'inline', renderFormat: renderFmt };
+
         if (existingElement) {
-          // Remove and recreate the element to force re-render
-          // (CKEditor's rawElement doesn't update when attributes change)
           const position = writer.createPositionBefore(existingElement);
           writer.remove(existingElement);
-
-          const mathElement = writer.createElement('mathFormula', {
-            latex: latex,
-            display: 'inline'
-          });
-
+          const mathElement = writer.createElement('mathFormula', attrs);
           writer.insert(mathElement, position);
           writer.setSelection(mathElement, 'on');
         } else {
-          // Insert new element
-          const mathElement = writer.createElement('mathFormula', {
-            latex: latex,
-            display: 'inline'
-          });
-
+          const mathElement = writer.createElement('mathFormula', attrs);
           editor.model.insertContent(mathElement);
         }
       });
     }
 
-    _renderMath(element, latex) {
+    _renderMath(element, latex, format) {
       if (!latex) {
         element.textContent = '(empty formula)';
         element.style.color = '#999';
         return;
       }
 
-      // Use MathLive's convertLatexToMarkup for styled HTML output
-      if (convertLatexToMarkup) {
+      const latexToRender = this._replaceFracWithTightCfrac(latex);
+      const useFormat = format || mathRenderFormat;
+      const renderOptions = {
+        letterShapeStyle: 'upright',
+        defaultMode: 'inline-math',
+        registers: {
+          thinmuskip: { dimension: 0, unit: 'mu' },
+          medmuskip: { dimension: 0, unit: 'mu' },
+          thickmuskip: { dimension: 0, unit: 'mu' },
+          nulldelimiterspace: { dimension: 0, unit: 'mu' }
+        }
+      };
+
+      if (useFormat === 'mathml' && convertLatexToMathMl) {
         try {
-          // Apply cfrac transformation for consistent fraction sizing
-          const latexToRender = this._replaceFracWithTightCfrac(latex);
-          const markup = convertLatexToMarkup(latexToRender, {
-            letterShapeStyle: 'upright',
-            defaultMode: 'inline-math',
-            registers: {
-              thinmuskip: { dimension: 0, unit: 'mu' },
-              medmuskip: { dimension: 0, unit: 'mu' },
-              thickmuskip: { dimension: 0, unit: 'mu' },
-              nulldelimiterspace: { dimension: 0, unit: 'mu' }
-            }
-          });
-          element.innerHTML = markup;
+          const cleaned = this._stripHtmlStyle(latexToRender);
+          const ml = convertLatexToMathMl(cleaned, renderOptions);
+          const wrapped = ml.trimStart().startsWith('<math') ? ml : `<math>${ml}</math>`;
+          element.innerHTML = wrapped;
+        } catch (e) {
+          this._renderFallback(element, latex);
+        }
+      } else if (convertLatexToMarkup) {
+        try {
+          element.innerHTML = convertLatexToMarkup(latexToRender, renderOptions);
         } catch (e) {
           this._renderFallback(element, latex);
         }
       } else {
-        // convertLatexToMarkup not loaded yet, use fallback
         this._renderFallback(element, latex);
       }
     }
@@ -495,6 +495,39 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         }
       }
       return -1;
+    }
+
+    /**
+     * Strip \htmlStyle{...}{content} → content
+     * MathML has no equivalent of \htmlStyle, so we unwrap to keep the content.
+     */
+    _stripHtmlStyle(latex) {
+      let result = latex;
+      let changed = true;
+      while (changed) {
+        changed = false;
+        const idx = result.indexOf('\\htmlStyle');
+        if (idx === -1) break;
+
+        let pos = idx + '\\htmlStyle'.length;
+        while (pos < result.length && result[pos] === ' ') pos++;
+        if (pos >= result.length || result[pos] !== '{') continue;
+
+        const styleEnd = this._findMatchingBrace(result, pos);
+        if (styleEnd === -1) break;
+
+        let contentStart = styleEnd + 1;
+        while (contentStart < result.length && result[contentStart] === ' ') contentStart++;
+        if (contentStart >= result.length || result[contentStart] !== '{') break;
+
+        const contentEnd = this._findMatchingBrace(result, contentStart);
+        if (contentEnd === -1) break;
+
+        const innerContent = result.substring(contentStart + 1, contentEnd);
+        result = result.substring(0, idx) + innerContent + result.substring(contentEnd + 1);
+        changed = true;
+      }
+      return result;
     }
 
     _renderFallback(element, latex) {

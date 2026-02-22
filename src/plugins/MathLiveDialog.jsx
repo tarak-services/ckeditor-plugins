@@ -36,10 +36,16 @@ const selectStyles = {
   menu: (base) => ({ ...base, width: 'max-content', minWidth: '100%' }),
 };
 
-const MathLiveDialog = ({ isOpen, initialLatex, onInsert, onClose, availableFonts, getAvailableFonts }) => {
+const RENDER_FORMAT_OPTIONS = [
+  { value: 'markup', label: 'Markup' },
+  { value: 'mathml', label: 'MathML' },
+];
+
+const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, onClose, availableFonts, getAvailableFonts }) => {
   const [latex, setLatex] = useState(initialLatex || '');
   const [isMounted, setIsMounted] = useState(false);
   const [fontOptions, setFontOptions] = useState([]);
+  const [renderFormat, setRenderFormat] = useState(initialRenderFormat || 'markup');
   const mathfieldRef = useRef(null);
   const savedSelectionRef = useRef(null);
 
@@ -117,6 +123,7 @@ const MathLiveDialog = ({ isOpen, initialLatex, onInsert, onClose, availableFont
   useEffect(() => {
     if (isOpen) {
       setLatex(initialLatex || '');
+      setRenderFormat(initialRenderFormat || 'markup');
       setIsMounted(false);
     }
 
@@ -144,7 +151,7 @@ const MathLiveDialog = ({ isOpen, initialLatex, onInsert, onClose, availableFont
 
   const handleInsert = () => {
     try {
-      onInsert(latex);
+      onInsert(latex, renderFormat);
     } catch (e) {
       console.error('Error inserting equation:', e);
     }
@@ -235,6 +242,20 @@ const MathLiveDialog = ({ isOpen, initialLatex, onInsert, onClose, availableFont
                   onMenuOpen={saveSelection}
                   placeholder="Font"
                   isSearchable
+                  menuPortalTarget={document.body}
+                  menuPosition="fixed"
+                  styles={selectStyles}
+                />
+              </div>
+            </div>
+            <div className={styles.toolbarGroup}>
+              <span className={styles.toolbarLabel}>Output:</span>
+              <div style={{ minWidth: 110 }}>
+                <Select
+                  options={RENDER_FORMAT_OPTIONS}
+                  value={RENDER_FORMAT_OPTIONS.find(o => o.value === renderFormat)}
+                  onChange={(option) => option && setRenderFormat(option.value)}
+                  isSearchable={false}
                   menuPortalTarget={document.body}
                   menuPosition="fixed"
                   styles={selectStyles}

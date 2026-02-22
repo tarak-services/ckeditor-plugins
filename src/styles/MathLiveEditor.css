@@ -58,9 +58,3 @@
 .ML__sans {
   font-family: var(--text-font-family), 'Arial Unicode MS', KaTeX_SansSerif !important;
 }
-
-
-.ML__frac-line:after {
-  min-height: 0.8px; /* thickness of the fraction line */
-  margin-top: 0px; /* offset to align the fraction line with the numerator and denominator */
-}
