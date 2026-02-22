@@ -68,7 +68,7 @@ export * from './utils/dropdownSearchUtils.js';
 //   - getAvailableFonts: Function to fetch available fonts (for FontSymbolSelectorPlugin)
 //   - getFontSupportedGlyphs: Function to fetch font glyphs (for FontSymbolSelectorPlugin)
 export function createAllPlugins(CKEditor, options = {}) {
-  const { getAvailableFonts, getFontSupportedGlyphs } = options;
+  const { getAvailableFonts, getFontSupportedGlyphs, mathLiveFonts } = options;
 
   return {
     AlignmentDefaultPlugin: createAlignmentDefaultPlugin(CKEditor),
@@ -83,7 +83,7 @@ export function createAllPlugins(CKEditor, options = {}) {
     ImageVerticalAlignPlugin: createImageVerticalAlignPlugin(CKEditor),
     LineHeightPlugin: createLineHeightPlugin(CKEditor),
     MarginTopPlugin: createMarginTopPlugin(CKEditor),
-    MathLivePlugin: createMathLivePlugin(CKEditor),
+    MathLivePlugin: createMathLivePlugin(CKEditor, { availableFonts: mathLiveFonts, getAvailableFonts }),
     MathSymbolsPlugin: createMathSymbolsPlugin(CKEditor),
     QRCodePlugin: createQRCodePlugin(CKEditor),
     SoftBreakVisibilityPlugin: createSoftBreakVisibilityPlugin(CKEditor),

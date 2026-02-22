@@ -24,8 +24,9 @@ import('mathlive').then(ml => {
  * @param {Object} CKEditor - CKEditor instance from CDN
  * @returns {Class} MathLivePlugin class
  */
-export default function createMathLivePlugin(CKEditor) {
+export default function createMathLivePlugin(CKEditor, options = {}) {
   const { Plugin, ButtonView, Widget, toWidget } = CKEditor;
+  const { availableFonts, getAvailableFonts } = options;
 
   class MathLivePlugin extends Plugin {
     static get pluginName() {
@@ -246,19 +247,21 @@ export default function createMathLivePlugin(CKEditor) {
       let isCleanedUp = false;
 
       const cleanup = () => {
-        if (isCleanedUp) return; // Prevent double cleanup
+        if (isCleanedUp) return;
         isCleanedUp = true;
-        root.unmount();
         if (container.parentNode) {
           container.parentNode.removeChild(container);
         }
+        document.querySelectorAll('[data-mathlive-overlay]').forEach(el => el.remove());
+        setTimeout(() => {
+          try { root.unmount(); } catch(e) {}
+        }, 0);
       };
 
       const handleInsert = (latex) => {
         if (latex !== null && latex !== undefined) {
           this._insertMath(editor, latex, selectedElement);
         }
-        cleanup();
       };
 
       const handleClose = () => {
@@ -273,6 +276,8 @@ export default function createMathLivePlugin(CKEditor) {
             initialLatex={currentLatex}
             onInsert={handleInsert}
             onClose={handleClose}
+            availableFonts={availableFonts}
+            getAvailableFonts={getAvailableFonts}
           />
         </MathLiveErrorBoundary>
       );
