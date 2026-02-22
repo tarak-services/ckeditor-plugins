@@ -19,6 +19,7 @@ import createUnderlineOffsetPlugin from '../plugins/UnderlineOffsetPlugin.js';
 import createTableColumnResizeOverridePlugin from '../plugins/TableColumnResizeOverridePlugin.js';
 import createCustomTableColumnResizePlugin from '../plugins/CustomTableColumnResizePlugin.js';
 import createSoftBreakVisibilityPlugin from '../plugins/SoftBreakVisibilityPlugin.js';
+import createSupSubLineHeightPlugin from '../plugins/SupSubLineHeightPlugin.js';
 import createCurlyQuotesPlugin from '../plugins/CurlyQuotesPlugin.js';
 import createFontDropdownLabelsPlugin from '../plugins/FontDropdownLabelsPlugin.js';
 import createMarginTopPlugin from '../plugins/MarginTopPlugin.js';
@@ -151,6 +152,7 @@ const RichTextEditor = ({
     TableColumnResizeOverridePlugin: createTableColumnResizeOverridePlugin(cloud.CKEditor),
     CustomTableColumnResizePlugin: createCustomTableColumnResizePlugin(cloud.CKEditor),
     SoftBreakVisibilityPlugin: createSoftBreakVisibilityPlugin(cloud.CKEditor),
+    SupSubLineHeightPlugin: createSupSubLineHeightPlugin(cloud.CKEditor),
     CurlyQuotesPlugin: createCurlyQuotesPlugin(cloud.CKEditor),
     FontDropdownLabelsPlugin: createFontDropdownLabelsPlugin(cloud.CKEditor),
     MarginTopPlugin: createMarginTopPlugin(cloud.CKEditor)

@@ -104,6 +104,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     ...(customPlugins.TableColumnResizeOverridePlugin ? [customPlugins.TableColumnResizeOverridePlugin] : []),
     ...(customPlugins.CustomTableColumnResizePlugin ? [customPlugins.CustomTableColumnResizePlugin] : []),
     ...(customPlugins.SoftBreakVisibilityPlugin ? [customPlugins.SoftBreakVisibilityPlugin] : []),
+    ...(customPlugins.SupSubLineHeightPlugin ? [customPlugins.SupSubLineHeightPlugin] : []),
     ...(customPlugins.CurlyQuotesPlugin ? [customPlugins.CurlyQuotesPlugin] : []),
     ...(customPlugins.FontDropdownLabelsPlugin ? [customPlugins.FontDropdownLabelsPlugin] : []),
     ...(customPlugins.MarginTopPlugin ? [customPlugins.MarginTopPlugin] : [])
@@ -119,7 +120,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     toolbar: {
       items: [
         'fontFamily', 'fontSize', 'lineHeight', '|',
-        'bold', 'italic', 'underlineOffset', 'strikethrough', 'superscript', 'subscript', '|',
+        'bold', 'italic', 'underlineOffset', 'strikethrough', 'superscript', 'subscript', 'supSubLineHeight', '|',
         'alignment', 'textAlignLast', 'textDirectionLTR', 'textDirectionRTL', '|',
         'bulletedList', 'numberedList', '|',
         'insertTableLayout', 'tableStyles', '|',

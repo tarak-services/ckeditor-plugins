@@ -16,6 +16,7 @@ import createMathSymbolsPlugin, { setGlobalMathSymbols, getGlobalMathSymbols } f
 import createQRCodePlugin from './plugins/QRCodePlugin.jsx';
 import createSearchableDropdownPlugin from './plugins/SearchableDropdownPlugin.js';
 import createSoftBreakVisibilityPlugin from './plugins/SoftBreakVisibilityPlugin.js';
+import createSupSubLineHeightPlugin from './plugins/SupSubLineHeightPlugin.js';
 import createTableBorderPlugin from './plugins/TableBorderPlugin.jsx';
 import createTableCellBaselinePlugin from './plugins/TableCellBaselinePlugin.js';
 import createTableColumnResizeOverridePlugin from './plugins/TableColumnResizeOverridePlugin.js';
@@ -44,6 +45,7 @@ export {
   createQRCodePlugin,
   createSearchableDropdownPlugin,
   createSoftBreakVisibilityPlugin,
+  createSupSubLineHeightPlugin,
   createTableBorderPlugin,
   createTableCellBaselinePlugin,
   createTableColumnResizeOverridePlugin,
@@ -88,6 +90,7 @@ export function createAllPlugins(CKEditor, options = {}) {
     MathSymbolsPlugin: createMathSymbolsPlugin(CKEditor),
     QRCodePlugin: createQRCodePlugin(CKEditor),
     SoftBreakVisibilityPlugin: createSoftBreakVisibilityPlugin(CKEditor),
+    SupSubLineHeightPlugin: createSupSubLineHeightPlugin(CKEditor),
     TableBorderPlugin: createTableBorderPlugin(CKEditor),
     TableCellBaselinePlugin: createTableCellBaselinePlugin(CKEditor),
     TableColumnResizeOverridePlugin: createTableColumnResizeOverridePlugin(CKEditor),

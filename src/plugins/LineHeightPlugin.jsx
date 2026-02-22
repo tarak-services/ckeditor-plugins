@@ -22,7 +22,6 @@ export default function createLineHeightPlugin(CKEditor) {
   init() {
     const editor = this.editor;
 
-    // Generate line height options in pt from 8pt to 72pt
     const defaultOptions = [];
     for (let i = 12; i <= 30; i += 0.5) {
       defaultOptions.push(`${i}pt`);
