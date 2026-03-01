@@ -220,7 +220,7 @@
 
 /* Editable base styles */
 .ck.ck-editor__editable {
-  font-family: var(--default-font-family, inherit);
+  font-family: var(--default-font-family, inherit), 'Times New Roman', KaTeX_Main;
   font-size: var(--default-font-size, inherit);
   line-height: var(--default-line-height, inherit);
   box-sizing: border-box;

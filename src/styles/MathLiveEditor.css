@@ -3,30 +3,30 @@
 }
 
 .ML__small-delim {
-  font-family: var(--text-font-family), KaTeX_Main !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Main !important;
 }
 
 .ML__text {
-  font-family: var(--text-font-family), KaTeX_Main !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Main !important;
 }
 
 .ML__cmr {
-  font-family: var(--text-font-family), KaTeX_Main !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Main !important;
 }
 
 .ML__mathit {
-  font-family: var(--text-font-family), KaTeX_Math !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Math !important;
   font-style: italic;
 }
 
 .ML__mathbf {
-  font-family: var(--text-font-family), KaTeX_Main !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Main !important;
   font-weight: 700;
 }
 
 .ML__mathbfit,
 .lcGreek.ML__mathbf {
-  font-family: var(--text-font-family), KaTeX_Math !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Math !important;
 }
 
 .ML__mathbfit {
@@ -36,27 +36,27 @@
 
 .ML__ams,
 .ML__bb {
-  font-family: var(--text-font-family), KaTeX_AMS !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_AMS !important;
 }
 
 .ML__cal {
-  font-family: var(--text-font-family), KaTeX_Caligraphic !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Caligraphic !important;
 }
 
 .ML__frak {
-  font-family: var(--text-font-family), KaTeX_Fraktur !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Fraktur !important;
 }
 
 .ML__tt {
-  font-family: var(--text-font-family), KaTeX_Typewriter !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Typewriter !important;
 }
 
 .ML__script {
-  font-family: var(--text-font-family), KaTeX_Script !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Script !important;
 }
 
 .ML__sans {
-  font-family: var(--text-font-family), KaTeX_SansSerif !important;
+  font-family: var(--text-font-family), 'Times New Roman', KaTeX_SansSerif !important;
 }
 
 .ML__accent-body {
