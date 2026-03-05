@@ -74,7 +74,6 @@
 /* Ensure content inside the rich text editor respects max-width */
 .rich-text-editor .ck-editor__editable .ck-content {
   max-width: 100%;
-  overflow-x: hidden;
 }
 
 

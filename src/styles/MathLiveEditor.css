@@ -2,8 +2,10 @@
   --text-font-family: 'Kokila';
 }
 
+
+/* dont add to this one any other fonts */
 .ML__small-delim {
-  font-family: var(--text-font-family), 'Times New Roman', KaTeX_Main !important;
+  font-family: var(--text-font-family), KaTeX_Main !important;
 }
 
 .ML__text {
