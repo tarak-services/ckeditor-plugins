@@ -42,7 +42,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     ImageResizeEditing,
     ImageResizeHandles,
     ImageUpload,
-    Base64UploadAdapter,
+    SimpleUploadAdapter,
     SourceEditing,
     GeneralHtmlSupport
   } = CKEditor;
@@ -81,7 +81,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     ImageResizeEditing,
     ImageResizeHandles,
     ImageUpload,
-    Base64UploadAdapter,
+    SimpleUploadAdapter,
     SourceEditing,
     GeneralHtmlSupport,
     // Add custom plugins
@@ -113,6 +113,10 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
   // Shared default configuration
   const sharedDefaultConfig = {
     licenseKey: licenseKey,
+    simpleUpload: {
+      uploadUrl: '/api/upload-image',
+      withCredentials: true
+    },
     // Force all paste operations to be plain text (Ctrl+V = plain text)
     clipboard: {
       pasteAsPlainText: true
