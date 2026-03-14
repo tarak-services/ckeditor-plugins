@@ -199,6 +199,39 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
     mf.focus();
   }, []);
 
+  const applyBold = useCallback(() => {
+    const mf = mathfieldRef.current;
+    if (!mf) return;
+    if (savedSelectionRef.current) {
+      mf.selection = savedSelectionRef.current;
+    }
+    mf.insert('\\mathbf{#@}');
+    setLatex(mf.value || '');
+    mf.focus();
+  }, []);
+
+  const applyItalic = useCallback(() => {
+    const mf = mathfieldRef.current;
+    if (!mf) return;
+    if (savedSelectionRef.current) {
+      mf.selection = savedSelectionRef.current;
+    }
+    mf.insert('\\mathit{#@}');
+    setLatex(mf.value || '');
+    mf.focus();
+  }, []);
+
+  const applyBoldItalic = useCallback(() => {
+    const mf = mathfieldRef.current;
+    if (!mf) return;
+    if (savedSelectionRef.current) {
+      mf.selection = savedSelectionRef.current;
+    }
+    mf.insert('\\mathbfit{#@}');
+    setLatex(mf.value || '');
+    mf.focus();
+  }, []);
+
   if (!isOpen) return null;
 
   return (
@@ -247,6 +280,32 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
                   styles={selectStyles}
                 />
               </div>
+            </div>
+            <div className={styles.toolbarGroup}>
+              <button
+                className={styles.toolbarButton}
+                onMouseDown={(e) => { e.preventDefault(); saveSelection(); }}
+                onClick={applyBold}
+                title="Bold"
+              >
+                <strong>B</strong>
+              </button>
+              <button
+                className={styles.toolbarButton}
+                onMouseDown={(e) => { e.preventDefault(); saveSelection(); }}
+                onClick={applyItalic}
+                title="Italic"
+              >
+                <em>I</em>
+              </button>
+              <button
+                className={styles.toolbarButton}
+                onMouseDown={(e) => { e.preventDefault(); saveSelection(); }}
+                onClick={applyBoldItalic}
+                title="Bold Italic"
+              >
+                <strong><em>BI</em></strong>
+              </button>
             </div>
             <div className={styles.toolbarGroup}>
               <span className={styles.toolbarLabel}>Output:</span>
