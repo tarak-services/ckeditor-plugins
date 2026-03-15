@@ -2,6 +2,7 @@
 import createAlignmentDefaultPlugin from './plugins/AlignmentDefaultPlugin.js';
 import createBarcodePlugin from './plugins/BarcodePlugin.jsx';
 import createCurlyQuotesPlugin from './plugins/CurlyQuotesPlugin.js';
+import createEnglishTextPlugin from './plugins/EnglishTextPlugin.js';
 import createCustomTableColumnResizePlugin from './plugins/CustomTableColumnResizePlugin.js';
 import createFontDropdownLabelsPlugin from './plugins/FontDropdownLabelsPlugin.js';
 import createFontFamilySearchPlugin from './plugins/FontFamilySearchPlugin.js';
@@ -29,6 +30,7 @@ export {
   createAlignmentDefaultPlugin,
   createBarcodePlugin,
   createCurlyQuotesPlugin,
+  createEnglishTextPlugin,
   createCustomTableColumnResizePlugin,
   createFontDropdownLabelsPlugin,
   createFontFamilySearchPlugin,
@@ -77,6 +79,7 @@ export function createAllPlugins(CKEditor, options = {}) {
     AlignmentDefaultPlugin: createAlignmentDefaultPlugin(CKEditor),
     BarcodePlugin: createBarcodePlugin(CKEditor),
     CurlyQuotesPlugin: createCurlyQuotesPlugin(CKEditor),
+    EnglishTextPlugin: createEnglishTextPlugin(CKEditor),
     CustomTableColumnResizePlugin: createCustomTableColumnResizePlugin(CKEditor),
     FontDropdownLabelsPlugin: createFontDropdownLabelsPlugin(CKEditor),
     FontFamilySearchPlugin: createFontFamilySearchPlugin(CKEditor),
