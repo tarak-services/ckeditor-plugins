@@ -13,7 +13,6 @@ import createImageVerticalAlignPlugin from './plugins/ImageVerticalAlignPlugin.j
 import createLineHeightPlugin from './plugins/LineHeightPlugin.jsx';
 import createMarginTopPlugin from './plugins/MarginTopPlugin.js';
 import createMathLivePlugin from './plugins/MathLivePlugin.jsx';
-import createMathSymbolsPlugin, { setGlobalMathSymbols, getGlobalMathSymbols } from './plugins/MathSymbolsPlugin.jsx';
 import createQRCodePlugin from './plugins/QRCodePlugin.jsx';
 import createSearchableDropdownPlugin from './plugins/SearchableDropdownPlugin.js';
 import createSoftBreakVisibilityPlugin from './plugins/SoftBreakVisibilityPlugin.js';
@@ -41,9 +40,6 @@ export {
   createLineHeightPlugin,
   createMarginTopPlugin,
   createMathLivePlugin,
-  createMathSymbolsPlugin,
-  setGlobalMathSymbols,
-  getGlobalMathSymbols,
   createQRCodePlugin,
   createSearchableDropdownPlugin,
   createSoftBreakVisibilityPlugin,
@@ -90,7 +86,6 @@ export function createAllPlugins(CKEditor, options = {}) {
     LineHeightPlugin: createLineHeightPlugin(CKEditor),
     MarginTopPlugin: createMarginTopPlugin(CKEditor),
     MathLivePlugin: createMathLivePlugin(CKEditor, { availableFonts: mathLiveFonts, getAvailableFonts, mathRenderFormat }),
-    MathSymbolsPlugin: createMathSymbolsPlugin(CKEditor),
     QRCodePlugin: createQRCodePlugin(CKEditor),
     SoftBreakVisibilityPlugin: createSoftBreakVisibilityPlugin(CKEditor),
     SupSubLineHeightPlugin: createSupSubLineHeightPlugin(CKEditor),

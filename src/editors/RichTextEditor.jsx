@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { CKEditor, useCKEditorCloud } from '@ckeditor/ckeditor5-react';
 import { createEditorConfig } from './editorConfig.js';
-import createMathSymbolsPlugin from '../plugins/MathSymbolsPlugin.jsx';
 import createMathLivePlugin from '../plugins/MathLivePlugin.jsx';
 import createTableBorderPlugin from '../plugins/TableBorderPlugin.jsx';
 import createQRCodePlugin from '../plugins/QRCodePlugin.jsx';
@@ -36,7 +35,7 @@ const SLIM_TOOLBAR = {
     'bold', 'italic', 'underlineOffset', 'strikethrough', '|',
     'superscript', 'subscript', '|',
     'bulletedList', 'numberedList', '|',
-    'MathLive', 'mathSymbols', '|',
+    'MathLive', '|',
     'sourceEditing'
   ],
   shouldNotGroupWhenFull: false
@@ -134,7 +133,6 @@ const RichTextEditor = ({
 
   // Create custom plugins with CDN CKEditor (pass the full CKEditor object)
   const customPlugins = {
-    MathSymbolsPlugin: createMathSymbolsPlugin(cloud.CKEditor),
     MathLivePlugin: createMathLivePlugin(cloud.CKEditor),
     TableBorderPlugin: createTableBorderPlugin(cloud.CKEditor),
     QRCodePlugin: createQRCodePlugin(cloud.CKEditor),

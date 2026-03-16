@@ -114,7 +114,6 @@ function CustomEditor() {
 | Plugin | Description |
 |--------|-------------|
 | `MathLivePlugin` | LaTeX math equation editor with MathLive |
-| `MathSymbolsPlugin` | Symbol picker for math symbols |
 | `LineHeightPlugin` | Line height control dropdown |
 | `TableBorderPlugin` | Table border style controls |
 | `QRCodePlugin` | QR code generator |
