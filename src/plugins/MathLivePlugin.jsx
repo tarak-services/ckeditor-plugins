@@ -248,13 +248,11 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
       const cleanup = () => {
         if (isCleanedUp) return;
         isCleanedUp = true;
+        try { root.unmount(); } catch(e) {}
+        document.querySelectorAll('[data-mathlive-overlay]').forEach(el => el.remove());
         if (container.parentNode) {
           container.parentNode.removeChild(container);
         }
-        document.querySelectorAll('[data-mathlive-overlay]').forEach(el => el.remove());
-        setTimeout(() => {
-          try { root.unmount(); } catch(e) {}
-        }, 0);
       };
 
       const handleInsert = (latex, format) => {

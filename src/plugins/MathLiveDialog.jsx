@@ -89,7 +89,11 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
 
     // Inject custom CSS into shadow DOM to override MathLive defaults
     const style = document.createElement('style');
-    style.textContent = mathEditorCss;
+    // Pick up --text-font-family from the nearest editor ancestor
+    const editorEl = element.closest?.('[data-editor-id]') || document.querySelector('[data-editor-id]');
+    const textFontFamily = editorEl ? getComputedStyle(editorEl).getPropertyValue('--text-font-family').trim() : '';
+    const overrideCss = textFontFamily ? `:host { --text-font-family: ${textFontFamily}; }` : '';
+    style.textContent = mathEditorCss + '\n' + overrideCss;
     element.shadowRoot.appendChild(style);
 
     // Set initial value
@@ -132,22 +136,6 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
     };
   }, [isOpen, initialLatex]);
 
-  // Handle Escape key to close dialog
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        handleClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen]);
 
   const handleInsert = () => {
     try {
