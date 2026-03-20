@@ -21,6 +21,8 @@ export default function createAlignmentDefaultPlugin(CKEditor) {
 
     init() {
       const editor = this.editor;
+      const locale = editor.locale;
+      const ckeditorDefault = locale.contentLanguageDirection === 'rtl' ? 'right' : 'left';
 
       const alignmentConfig = editor.config.get('alignment.options') || [];
       const alignmentClassMap = {};
@@ -31,9 +33,19 @@ export default function createAlignmentDefaultPlugin(CKEditor) {
         }
       }
 
+      const defaultOption = alignmentConfig.find(
+        o => typeof o === 'object' && o.name === ckeditorDefault && o.className
+      );
+      if (defaultOption) {
+        editor.conversion.for('upcast').attributeToAttribute({
+          view: { key: 'class', value: defaultOption.className },
+          model: { key: 'alignment', value: ckeditorDefault }
+        });
+      }
+
       editor.conversion.for('downcast').add(dispatcher => {
         dispatcher.on('attribute:alignment', (evt, data, conversionApi) => {
-          if (!conversionApi.consumable.test(data.item, evt.name)) {
+          if (!conversionApi.consumable.consume(data.item, evt.name)) {
             return;
           }
 
@@ -54,7 +66,7 @@ export default function createAlignmentDefaultPlugin(CKEditor) {
           if (alignment && alignmentClassMap[alignment]) {
             writer.addClass(alignmentClassMap[alignment], viewElement);
           }
-        }, { priority: 'lowest' });
+        }, { priority: 'high' });
       });
     }
 
