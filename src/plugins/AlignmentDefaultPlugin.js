@@ -1,8 +1,11 @@
 /**
- * Custom plugin that forces CKEditor to output alignment classes for ALL alignments,
- * including "left" which is normally considered the default and omitted.
+ * Custom plugin that outputs alignment classes only for explicit user overrides.
+ * The default alignment is handled purely via CSS (--default-text-alignment variable
+ * in-editor, and base CSS rules for PDF/preview output), so paragraphs without
+ * an alignment class inherit the contextual default.
  *
- * Reads the default alignment from editor config: `alignment.defaultAlignment`
+ * Existing content with explicit alignment classes (e.g. text-align-justify from
+ * older editor behavior) is preserved and continues to render correctly.
  */
 export default function createAlignmentDefaultPlugin(CKEditor) {
   const { Plugin } = CKEditor;
@@ -19,10 +22,6 @@ export default function createAlignmentDefaultPlugin(CKEditor) {
     init() {
       const editor = this.editor;
 
-      // Get the default alignment from config (fallback to 'left' if not set)
-      const defaultAlignment = editor.config.get('alignment.defaultAlignment') || 'left';
-
-      // Setup downcast conversion for alignment classes
       const alignmentConfig = editor.config.get('alignment.options') || [];
       const alignmentClassMap = {};
 
@@ -32,7 +31,6 @@ export default function createAlignmentDefaultPlugin(CKEditor) {
         }
       }
 
-      // Override downcast conversion to always output the class
       editor.conversion.for('downcast').add(dispatcher => {
         dispatcher.on('attribute:alignment', (evt, data, conversionApi) => {
           if (!conversionApi.consumable.test(data.item, evt.name)) {
@@ -46,90 +44,57 @@ export default function createAlignmentDefaultPlugin(CKEditor) {
 
           const writer = conversionApi.writer;
 
-          // Remove all alignment classes first
           for (const className of Object.values(alignmentClassMap)) {
             if (viewElement.hasClass(className)) {
               writer.removeClass(className, viewElement);
             }
           }
 
-          // Add the new alignment class
           const alignment = data.attributeNewValue;
           if (alignment && alignmentClassMap[alignment]) {
             writer.addClass(alignmentClassMap[alignment], viewElement);
           }
         }, { priority: 'lowest' });
       });
-
-      // Add a post-fixer to ensure all blocks (especially in tables) have explicit alignment
-      editor.model.document.registerPostFixer(writer => {
-        const changes = editor.model.document.differ.getChanges();
-        let wasFixed = false;
-
-        for (const change of changes) {
-          if (change.type === 'insert') {
-            const item = change.position.nodeAfter;
-            if (item) {
-              // Check the item itself and all its descendants
-              const itemsToCheck = [item];
-              if (item.is('element')) {
-                for (const descendant of item.getChildren()) {
-                  itemsToCheck.push(descendant);
-                  if (descendant.is && descendant.is('element')) {
-                    for (const child of descendant.getChildren()) {
-                      itemsToCheck.push(child);
-                    }
-                  }
-                }
-              }
-
-              for (const node of itemsToCheck) {
-                if (node.is && node.is('element') &&
-                    editor.model.schema.checkAttribute(node, 'alignment') &&
-                    !node.hasAttribute('alignment')) {
-                  writer.setAttribute('alignment', defaultAlignment, node);
-                  wasFixed = true;
-                }
-              }
-            }
-          }
-        }
-
-        return wasFixed;
-      });
     }
 
     afterInit() {
       const editor = this.editor;
+      const defaultAlignment = editor.config.get('alignment.defaultAlignment') || 'left';
       const alignmentCommand = editor.commands.get('alignment');
 
-      if (!alignmentCommand) {
-        console.warn('AlignmentDefaultPlugin: alignment command not found');
-        return;
-      }
+      if (!alignmentCommand) return;
 
-      // Get the default alignment from config (fallback to 'left' if not set)
-      const defaultAlignment = editor.config.get('alignment.defaultAlignment') || 'left';
+      const originalRefresh = alignmentCommand.refresh.bind(alignmentCommand);
+      alignmentCommand.refresh = function () {
+        originalRefresh();
+        if (!this.isEnabled) return;
 
-      // Override execute to force explicit "left" alignment when left is clicked
-      const originalExecute = alignmentCommand.execute.bind(alignmentCommand);
-      alignmentCommand.execute = (options = {}) => {
-        const { value } = options;
-        originalExecute(options);
-
-        // If alignment was set to left (or removed), explicitly set it
-        if (value === 'left' || !value) {
-          editor.model.change(writer => {
-            const selection = editor.model.document.selection;
-            const blocks = Array.from(selection.getSelectedBlocks());
-
-            for (const block of blocks) {
-              if (editor.model.schema.checkAttribute(block, 'alignment')) {
-                writer.setAttribute('alignment', 'left', block);
-              }
-            }
-          });
+        const firstBlock = editor.model.document.selection.getSelectedBlocks().next().value;
+        if (firstBlock && !firstBlock.hasAttribute('alignment')) {
+          this.value = defaultAlignment;
         }
+      };
+
+      alignmentCommand.execute = function (options = {}) {
+        const { value } = options;
+
+        editor.model.change(writer => {
+          const blocks = Array.from(editor.model.document.selection.getSelectedBlocks())
+            .filter(block => editor.model.schema.checkAttribute(block, 'alignment'));
+          if (!blocks.length) return;
+
+          const currentAlignment = blocks[0].getAttribute('alignment');
+          const shouldRemove = value === defaultAlignment || currentAlignment === value || !value;
+
+          for (const block of blocks) {
+            if (shouldRemove) {
+              writer.removeAttribute('alignment', block);
+            } else {
+              writer.setAttribute('alignment', value, block);
+            }
+          }
+        });
       };
     }
   };
