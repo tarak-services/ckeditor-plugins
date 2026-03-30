@@ -85,7 +85,7 @@ export default function createTextDirectionPlugin(CKEditor) {
           if (!direction) return;
           return writer.createAttributeElement('span', {
             dir: direction,
-            style: `direction: ${direction};`
+            style: `direction: ${direction}; unicode-bidi: isolate;`
           }, { priority: 7 });
         }
       });

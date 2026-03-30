@@ -540,15 +540,21 @@ export default function createBarcodePlugin(CKEditor) {
         }
 
         try {
-          // For preview, generate placeholder if there are variables
+          // For preview, use the variable string itself so the user can see what it encodes
+          // If the variable text fails for the barcode format, fall back to a placeholder
           const hasVars = text.includes('@');
-          const previewText = hasVars ? 'PLACEHOLDER' : text;
-
-          const dataUrl = generateBarcodeDataUrl(previewText, {
-            format,
-            height,
-            displayValue: showText
-          });
+          let previewText = text;
+          let dataUrl;
+          if (hasVars) {
+            try {
+              dataUrl = generateBarcodeDataUrl(text, { format, height, displayValue: showText });
+            } catch {
+              previewText = 'PLACEHOLDER';
+              dataUrl = generateBarcodeDataUrl(previewText, { format, height, displayValue: showText });
+            }
+          } else {
+            dataUrl = generateBarcodeDataUrl(text, { format, height, displayValue: showText });
+          }
 
           editor.model.change(writer => {
             const imageAttrs = {

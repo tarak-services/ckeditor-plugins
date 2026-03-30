@@ -508,10 +508,9 @@ export default function createQRCodePlugin(CKEditor) {
         return;
       }
 
-      // For preview in editor, generate a placeholder QR if there are variables
+      // For preview in editor, use the variable string itself so the user sees what it encodes
       // The actual QR will be regenerated at render time with real values
-      const hasVars = text.includes('@');
-      const qrText = hasVars ? 'DYNAMIC-QR-PLACEHOLDER' : text;
+      const qrText = text;
 
       const dataUrl = await QRCode.toDataURL(qrText, {
         width: size,
