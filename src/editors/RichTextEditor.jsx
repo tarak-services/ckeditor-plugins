@@ -21,6 +21,7 @@ import createSoftBreakVisibilityPlugin from '../plugins/SoftBreakVisibilityPlugi
 import createSupSubLineHeightPlugin from '../plugins/SupSubLineHeightPlugin.js';
 import createCurlyQuotesPlugin from '../plugins/CurlyQuotesPlugin.js';
 import createFontDropdownLabelsPlugin from '../plugins/FontDropdownLabelsPlugin.js';
+import createMarginBottomPlugin from '../plugins/MarginBottomPlugin.js';
 import createMarginTopPlugin from '../plugins/MarginTopPlugin.js';
 
 import { useCKEditorFonts } from '../hooks/useCKEditorFonts.js';
@@ -153,6 +154,7 @@ const RichTextEditor = ({
     SupSubLineHeightPlugin: createSupSubLineHeightPlugin(cloud.CKEditor),
     CurlyQuotesPlugin: createCurlyQuotesPlugin(cloud.CKEditor),
     FontDropdownLabelsPlugin: createFontDropdownLabelsPlugin(cloud.CKEditor),
+    MarginBottomPlugin: createMarginBottomPlugin(cloud.CKEditor),
     MarginTopPlugin: createMarginTopPlugin(cloud.CKEditor)
   };
 

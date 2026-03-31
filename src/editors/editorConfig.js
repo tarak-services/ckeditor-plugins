@@ -107,6 +107,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     ...(customPlugins.CurlyQuotesPlugin ? [customPlugins.CurlyQuotesPlugin] : []),
     ...(customPlugins.EnglishTextPlugin ? [customPlugins.EnglishTextPlugin] : []),
     ...(customPlugins.FontDropdownLabelsPlugin ? [customPlugins.FontDropdownLabelsPlugin] : []),
+    ...(customPlugins.MarginBottomPlugin ? [customPlugins.MarginBottomPlugin] : []),
     ...(customPlugins.MarginTopPlugin ? [customPlugins.MarginTopPlugin] : [])
   ];
 
@@ -131,7 +132,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
         'MathLive', 'FontSymbolSelector', 'curlyQuotes', '|',
         'imageUpload', 'insertQRCode', '|',
         'sourceEditing', '|',
-        'marginTop', '|',
+        'marginTop', 'marginBottom', '|',
         'removeFormat'
       ],
       shouldNotGroupWhenFull: true
@@ -151,7 +152,8 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
         'tableCellProperties',
         'tableCellVerticalAlignmentBaseline',
         'toggleTableCaption',
-        'marginTop'
+        'marginTop',
+        'marginBottom'
       ],
       tableCellProperties: {
         defaultProperties: {
@@ -189,6 +191,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
         'imageTopOffset',
         '|',
         'marginTop',
+        'marginBottom',
         '|',
         'imageDPIScale'
       ]

@@ -11,6 +11,7 @@ import createFontSymbolSelectorPlugin from './plugins/FontSymbolSelectorPlugin.j
 import createImageDPIScalePlugin from './plugins/ImageDPIScalePlugin.js';
 import createImageVerticalAlignPlugin from './plugins/ImageVerticalAlignPlugin.js';
 import createLineHeightPlugin from './plugins/LineHeightPlugin.jsx';
+import createMarginBottomPlugin from './plugins/MarginBottomPlugin.js';
 import createMarginTopPlugin from './plugins/MarginTopPlugin.js';
 import createMathLivePlugin from './plugins/MathLivePlugin.jsx';
 import createQRCodePlugin from './plugins/QRCodePlugin.jsx';
@@ -38,6 +39,7 @@ export {
   createImageDPIScalePlugin,
   createImageVerticalAlignPlugin,
   createLineHeightPlugin,
+  createMarginBottomPlugin,
   createMarginTopPlugin,
   createMathLivePlugin,
   createQRCodePlugin,
@@ -84,6 +86,7 @@ export function createAllPlugins(CKEditor, options = {}) {
     ImageDPIScalePlugin: createImageDPIScalePlugin(CKEditor),
     ImageVerticalAlignPlugin: createImageVerticalAlignPlugin(CKEditor),
     LineHeightPlugin: createLineHeightPlugin(CKEditor),
+    MarginBottomPlugin: createMarginBottomPlugin(CKEditor),
     MarginTopPlugin: createMarginTopPlugin(CKEditor),
     MathLivePlugin: createMathLivePlugin(CKEditor, { availableFonts: mathLiveFonts, getAvailableFonts, mathRenderFormat }),
     QRCodePlugin: createQRCodePlugin(CKEditor),
