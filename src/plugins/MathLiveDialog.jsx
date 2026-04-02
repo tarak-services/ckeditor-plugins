@@ -41,6 +41,12 @@ const RENDER_FORMAT_OPTIONS = [
   { value: 'mathml', label: 'MathML' },
 ];
 
+// Operator commands render upright regardless of \mathit/\mathbf wrapping.
+// Decompose them to plain letters so font style commands actually take effect.
+const OPERATOR_RE = /\\(?:ln|log|sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|exp|lim|min|max|inf|sup|det|dim|gcd|hom|ker|lg|deg|arg|sinh|cosh|tanh|coth)(?![a-zA-Z])/g;
+const decomposeOperators = (latex) =>
+  latex.replace(OPERATOR_RE, (m) => m.slice(1));
+
 const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, onClose, availableFonts, getAvailableFonts }) => {
   const [latex, setLatex] = useState(initialLatex || '');
   const [isMounted, setIsMounted] = useState(false);
@@ -187,38 +193,29 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
     mf.focus();
   }, []);
 
-  const applyBold = useCallback(() => {
+  const insertStyled = useCallback((command) => {
     const mf = mathfieldRef.current;
     if (!mf) return;
     if (savedSelectionRef.current) {
       mf.selection = savedSelectionRef.current;
     }
-    mf.insert('\\mathbf{#@}');
+    try {
+      const selectedLatex = mf.getValue(mf.selection, 'latex');
+      if (selectedLatex) {
+        mf.insert(`${command}{${decomposeOperators(selectedLatex)}}`);
+        setLatex(mf.value || '');
+        mf.focus();
+        return;
+      }
+    } catch (_) { /* fall through */ }
+    mf.insert(`${command}{#@}`);
     setLatex(mf.value || '');
     mf.focus();
   }, []);
 
-  const applyItalic = useCallback(() => {
-    const mf = mathfieldRef.current;
-    if (!mf) return;
-    if (savedSelectionRef.current) {
-      mf.selection = savedSelectionRef.current;
-    }
-    mf.insert('\\mathit{#@}');
-    setLatex(mf.value || '');
-    mf.focus();
-  }, []);
-
-  const applyBoldItalic = useCallback(() => {
-    const mf = mathfieldRef.current;
-    if (!mf) return;
-    if (savedSelectionRef.current) {
-      mf.selection = savedSelectionRef.current;
-    }
-    mf.insert('\\mathbfit{#@}');
-    setLatex(mf.value || '');
-    mf.focus();
-  }, []);
+  const applyBold = useCallback(() => insertStyled('\\mathbf'), [insertStyled]);
+  const applyItalic = useCallback(() => insertStyled('\\mathit'), [insertStyled]);
+  const applyBoldItalic = useCallback(() => insertStyled('\\mathbfit'), [insertStyled]);
 
   if (!isOpen) return null;
 
