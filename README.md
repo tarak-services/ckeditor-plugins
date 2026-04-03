@@ -1,171 +1,86 @@
-# @tarak/ckeditor-plugins
+# CKEditor Plugins — Local Development
 
-Custom CKEditor 5 plugins and components for rich text editing.
+Shared CKEditor 5 plugin package (`@tarak/ckeditor-plugins`) providing math (MathLive), barcode (JsBarcode), QR code, and rich text editing plugins.
 
-## Installation
+## Prerequisites
 
-### From Git URL
+- Node.js 18+
+- A consumer app to run the plugins (setmaker or packer)
+
+## Setup
 
 ```bash
-npm install git+https://github.com/yourorg/ckeditor-plugins.git#main
+cd ckeditor-plugins
+npm install
 ```
 
-Or in `package.json`:
+This package has **no build step or dev server** — it is consumed as source by apps that bundle it via Vite.
+
+## How It Works
+
+Consumer apps reference this package as a file dependency:
 
 ```json
-{
-  "dependencies": {
-    "@tarak/ckeditor-plugins": "git+https://github.com/yourorg/ckeditor-plugins.git#main"
-  }
-}
+"@tarak/ckeditor-plugins": "file:../../ckeditor-plugins"
 ```
 
-### Peer Dependencies
+CKEditor itself is loaded from CDN (v47.2.0, premium) via `useCKEditorCloud` — no local CKEditor build is needed.
 
-Make sure you have these installed in your project:
+## Developing Plugins
+
+Since there's no standalone dev server, work on plugins by running a consumer app:
+
+### With SetMaker
 
 ```bash
-npm install react react-dom @ckeditor/ckeditor5-react
+cd setmaker/web
+npm install        # links ckeditor-plugins via file:
+npm run dev        # Vite dev server on port 3000
 ```
 
-## Usage
-
-### Quick Start with RichTextEditor Component
-
-```jsx
-import { RichTextEditor } from '@tarak/ckeditor-plugins';
-import '@tarak/ckeditor-plugins/src/styles/RichTextEditor.css';
-import '@tarak/ckeditor-plugins/src/styles/MathLiveEditor.css';
-
-function MyEditor() {
-  const [content, setContent] = useState('');
-
-  return (
-    <RichTextEditor
-      value={content}
-      onChange={setContent}
-      placeholder="Enter content..."
-      defaultFontFamily="Arial"
-      defaultFontSize="12pt"
-    />
-  );
-}
-```
-
-### With Custom Font Loader
-
-```jsx
-import { RichTextEditor } from '@tarak/ckeditor-plugins';
-
-// Your custom function to fetch fonts from your API
-const loadFonts = async () => {
-  const response = await fetch('/api/fonts');
-  const data = await response.json();
-  return data.map(font => font.name); // Return array of font names
-};
-
-function MyEditor() {
-  return (
-    <RichTextEditor
-      value={content}
-      onChange={setContent}
-      fontLoader={loadFonts}
-    />
-  );
-}
-```
-
-### Using Individual Plugins
-
-```jsx
-import { useCKEditorCloud } from '@ckeditor/ckeditor5-react';
-import {
-  createMathLivePlugin,
-  createLineHeightPlugin,
-  createEditorConfig,
-  createAllPlugins
-} from '@tarak/ckeditor-plugins';
-
-function CustomEditor() {
-  const cloud = useCKEditorCloud({ version: '47.2.0', premium: true });
-
-  if (cloud.status !== 'success') return <div>Loading...</div>;
-
-  // Option 1: Create specific plugins
-  const customPlugins = {
-    MathLivePlugin: createMathLivePlugin(cloud.CKEditor),
-    LineHeightPlugin: createLineHeightPlugin(cloud.CKEditor),
-  };
-
-  // Option 2: Create all plugins at once
-  const allPlugins = createAllPlugins(cloud.CKEditor);
-
-  const { sharedPlugins, sharedDefaultConfig } = createEditorConfig(
-    cloud.CKEditor,
-    customPlugins // or allPlugins
-  );
-
-  // ... use with CKEditor
-}
-```
-
-## Available Plugins
-
-| Plugin | Description |
-|--------|-------------|
-| `MathLivePlugin` | LaTeX math equation editor with MathLive |
-| `LineHeightPlugin` | Line height control dropdown |
-| `TableBorderPlugin` | Table border style controls |
-| `QRCodePlugin` | QR code generator |
-| `FontFamilySearchPlugin` | Searchable font family dropdown |
-| `FontSizeSearchPlugin` | Searchable font size dropdown |
-| `TextDirectionPlugin` | LTR/RTL text direction controls |
-| `AlignmentDefaultPlugin` | Default alignment settings |
-| `TextAlignLastPlugin` | Text-align-last CSS property |
-| `ImageDPIScalePlugin` | Image DPI scaling controls |
-| `ImageVerticalAlignPlugin` | Vertical alignment for inline images |
-| `TableCellBaselinePlugin` | Baseline alignment for table cells |
-| `FontSymbolSelectorPlugin` | Special character/symbol picker |
-| `UnderlineOffsetPlugin` | Custom underline with offset |
-| `TableColumnResizeOverridePlugin` | Custom table column resize behavior |
-| `CustomTableColumnResizePlugin` | Enhanced table column resize |
-| `SoftBreakVisibilityPlugin` | Shows soft breaks (BR) visually |
-| `CurlyQuotesPlugin` | Smart curly quotes insertion |
-| `FontDropdownLabelsPlugin` | Font dropdown label formatting |
-| `MarginTopPlugin` | Margin top controls |
-
-## Configuration
-
-### RichTextEditor Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | string | `''` | HTML content |
-| `onChange` | function | - | Called with new HTML when content changes |
-| `placeholder` | string | `'Enter content...'` | Placeholder text |
-| `variables` | array | `[]` | Mention variables (prefixed with @) |
-| `minHeight` | string | `'200px'` | Minimum editor height |
-| `maxWidth` | number | `null` | Maximum editor width in pixels |
-| `defaultFontFamily` | string | `null` | Default font family |
-| `defaultFontSize` | string | `null` | Default font size (e.g., '12pt') |
-| `defaultLineHeight` | string | `null` | Default line height (e.g., '18pt') |
-| `defaultTextAlignment` | string | `null` | Default text alignment |
-| `variant` | string | `'full'` | `'full'` or `'slim'` toolbar |
-| `disabled` | boolean | `false` | Read-only mode |
-| `fontLoader` | function | `null` | Async function returning font names array |
-
-## License
-
-This package requires a CKEditor license. Each project using this package needs:
-1. A valid CKEditor license key (set via `VITE_CKEDITOR_LICENSE_KEY` env var)
-2. Domain authorization in your CKEditor dashboard
-
-## Updating
+### With Packer
 
 ```bash
-# Force reinstall latest from git
-npm install @tarak/ckeditor-plugins@git+https://github.com/yourorg/ckeditor-plugins.git#main --force
-
-# Or pin to a specific tag
-npm install @tarak/ckeditor-plugins@git+https://github.com/yourorg/ckeditor-plugins.git#v1.0.0
+cd packer/frontend
+npm install        # links ckeditor-plugins via file:
+npm run dev        # Vite dev server on port 4000
 ```
+
+Changes to files in `ckeditor-plugins/src/` are picked up by Vite's HMR in the consumer app.
+
+## Environment Variables
+
+Consumer apps must set:
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_CKEDITOR_LICENSE_KEY` | CKEditor premium license key (set in the consumer app's `.env`) |
+
+## Package Exports
+
+The package exports from `src/index.js`:
+
+- `RichTextEditor` — drop-in React component with all plugins wired up
+- `createAllPlugins()` — returns array of all custom CKEditor plugins
+- `createEditorConfig()` — returns a full CKEditor config with toolbar, plugins, and defaults
+- Individual plugins from `@tarak/ckeditor-plugins/plugins/*`
+- Editor components from `@tarak/ckeditor-plugins/editors/*`
+
+## Plugins
+
+| Plugin | Library | Description |
+|--------|---------|-------------|
+| MathLive | `mathlive` | LaTeX math input and rendering |
+| Barcode | `jsbarcode` | Barcode generation (canvas → PNG) |
+| QR Code | `qrcode` | QR code insertion |
+| Table Layout | — | Enhanced table support |
+| Font Symbol | — | Special character/symbol picker |
+| Line Height | — | Line height control |
+| Margins | — | Top/bottom margin adjustment |
+| Underline Offset | — | Customizable underline |
+| Text Direction | — | LTR/RTL toggle |
+| Curly Quotes | — | Smart quote insertion |
+
+## Deployment
+
+In production, consumer apps pull this package from GitHub instead of the local `file:` dependency. Docker is not used for local development.
