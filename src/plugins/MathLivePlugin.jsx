@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import 'mathlive/static.css';  // Required for convertLatexToMarkup rendered output
 import MathLiveDialog from './MathLiveDialog.jsx';
 import MathLiveErrorBoundary from './MathLiveErrorBoundary.jsx';
+import { replaceFracWithCfrac } from '../utils/fracReplace';
 
 // We'll import MathLive functions dynamically to avoid interfering with initialization
 let convertLatexToMarkup = null;
@@ -307,7 +308,7 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         return;
       }
 
-      const latexToRender = this._replaceFracWithTightCfrac(latex);
+      const latexToRender = replaceFracWithCfrac(latex);
       const useFormat = format || mathRenderFormat;
       const renderOptions = {
         letterShapeStyle: 'upright',
@@ -338,161 +339,6 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
       } else {
         this._renderFallback(element, latex);
       }
-    }
-
-    /**
-     * Process fractions for compact (textstyle) rendering:
-     * Convert \frac to \tfrac for consistent compact fraction display
-     */
-    _replaceFracWithTfrac(latex) {
-      let result = latex;
-      let changed = true;
-
-      // Keep processing until no more \frac remain
-      while (changed) {
-        changed = false;
-        let pos = 0;
-
-        while (pos < result.length) {
-          const fracIndex = result.indexOf('\\frac', pos);
-          if (fracIndex === -1) break;
-
-          // Skip \cfrac, \dfrac, and \tfrac
-          if (fracIndex > 0 && (result[fracIndex - 1] === 'c' || result[fracIndex - 1] === 'd' || result[fracIndex - 1] === 't')) {
-            pos = fracIndex + 5;
-            continue;
-          }
-
-          // Parse arguments
-          const parsed = this._parseFracArgs(result, fracIndex + 5);
-          if (!parsed) {
-            pos = fracIndex + 5;
-            continue;
-          }
-
-          const { firstArg, secondArg, endPos } = parsed;
-
-          // Convert to \tfrac for compact text-style fraction
-          const replacement = `\\tfrac{${firstArg}}{${secondArg}}`;
-
-          result = result.substring(0, fracIndex) + replacement + result.substring(endPos);
-          changed = true;
-          break; // Restart from beginning to catch nested fracs
-        }
-      }
-
-      return result;
-    }
-
-    /**
-     * Process fractions for display style rendering:
-     * 1. Simple numeric fractions (only digits) → \cfrac with \raisebox for tighter spacing
-     * 2. All other fractions → just \frac to \cfrac (no raisebox)
-     */
-    _replaceFracWithTightCfrac(latex) {
-      let result = latex;
-      let changed = true;
-
-      // Keep processing until no more \frac remain
-      while (changed) {
-        changed = false;
-        let pos = 0;
-
-        while (pos < result.length) {
-          const fracIndex = result.indexOf('\\frac', pos);
-          if (fracIndex === -1) break;
-
-          // Skip \cfrac and \dfrac
-          if (fracIndex > 0 && (result[fracIndex - 1] === 'c' || result[fracIndex - 1] === 'd')) {
-            pos = fracIndex + 5;
-            continue;
-          }
-
-          // Parse arguments
-          const parsed = this._parseFracArgs(result, fracIndex + 5);
-          if (!parsed) {
-            pos = fracIndex + 5;
-            continue;
-          }
-
-          const { firstArg, secondArg, endPos } = parsed;
-
-          // Check if both args are purely numeric (only digits)
-          const isNumeric = /^\d+$/.test(firstArg) && /^\d+$/.test(secondArg);
-
-          let replacement;
-          if (isNumeric) {
-            // Simple numeric fraction → use raisebox for tighter spacing
-            replacement = `\\cfrac{${firstArg}}{\\raisebox{0.5ex}{${secondArg}}}`;
-          } else {
-            // Complex fraction → just convert to cfrac
-            replacement = `\\cfrac{${firstArg}}{${secondArg}}`;
-          }
-
-          result = result.substring(0, fracIndex) + replacement + result.substring(endPos);
-          changed = true;
-          break; // Restart from beginning to catch nested fracs
-        }
-      }
-
-      return result;
-    }
-
-    /**
-     * Parse the two arguments of \frac starting at position pos.
-     * Handles both {braced} and single-char arguments.
-     */
-    _parseFracArgs(str, pos) {
-      // Skip whitespace
-      while (pos < str.length && str[pos] === ' ') pos++;
-      if (pos >= str.length) return null;
-
-      // First argument
-      let firstArg, firstEnd;
-      if (str[pos] === '{') {
-        const braceEnd = this._findMatchingBrace(str, pos);
-        if (braceEnd === -1) return null;
-        firstArg = str.substring(pos + 1, braceEnd);
-        firstEnd = braceEnd + 1;
-      } else {
-        firstArg = str[pos];
-        firstEnd = pos + 1;
-      }
-
-      // Skip whitespace
-      pos = firstEnd;
-      while (pos < str.length && str[pos] === ' ') pos++;
-      if (pos >= str.length) return null;
-
-      // Second argument
-      let secondArg, secondEnd;
-      if (str[pos] === '{') {
-        const braceEnd = this._findMatchingBrace(str, pos);
-        if (braceEnd === -1) return null;
-        secondArg = str.substring(pos + 1, braceEnd);
-        secondEnd = braceEnd + 1;
-      } else {
-        secondArg = str[pos];
-        secondEnd = pos + 1;
-      }
-
-      return { firstArg, secondArg, endPos: secondEnd };
-    }
-
-    /**
-     * Find matching closing brace for opening brace at startIndex.
-     */
-    _findMatchingBrace(str, startIndex) {
-      if (str[startIndex] !== '{') return -1;
-      let depth = 1;
-      for (let i = startIndex + 1; i < str.length; i++) {
-        if (str[i] === '{') depth++;
-        else if (str[i] === '}') {
-          depth--;
-          if (depth === 0) return i;
-        }
-      }
-      return -1;
     }
 
     /**

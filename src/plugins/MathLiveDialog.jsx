@@ -4,6 +4,8 @@ import 'mathlive/fonts.css';
 import 'mathlive';
 import styles from './MathLivePlugin.module.css';
 import mathEditorCss from '../styles/MathLiveEditor.css?inline'; // Import CSS as string
+import LatexCodeEditor from '../components/LatexCodeEditor/LatexCodeEditor.jsx';
+import { formatLatexForEditor } from '../utils/latexFormatter.js';
 
 // Suppress ResizeObserver errors (harmless warnings from MathLive keyboard)
 if (typeof window !== 'undefined') {
@@ -49,6 +51,7 @@ const decomposeOperators = (latex) =>
 
 const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, onClose, availableFonts, getAvailableFonts }) => {
   const [latex, setLatex] = useState(initialLatex || '');
+  const [editorLatex, setEditorLatex] = useState(initialLatex ? formatLatexForEditor(initialLatex) : '');
   const [isMounted, setIsMounted] = useState(false);
   const [fontOptions, setFontOptions] = useState([]);
   const [renderFormat, setRenderFormat] = useState(initialRenderFormat || 'markup');
@@ -108,6 +111,7 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
     // Listen for changes
     const handleInput = () => {
       setLatex(element.value || '');
+      setEditorLatex(formatLatexForEditor(element.value || ''));
     };
 
     element.addEventListener('input', handleInput);
@@ -133,6 +137,7 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
   useEffect(() => {
     if (isOpen) {
       setLatex(initialLatex || '');
+      setEditorLatex(initialLatex ? formatLatexForEditor(initialLatex) : '');
       setRenderFormat(initialRenderFormat || 'markup');
       setIsMounted(false);
     }
@@ -141,6 +146,16 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
       // Cleanup handled by React
     };
   }, [isOpen, initialLatex]);
+
+  const handleCodeChange = (newLatex) => {
+    setEditorLatex(newLatex);
+    setLatex(newLatex);
+    if (mathfieldRef.current) {
+      // Programmatically updating value doesn't trigger 'input' event,
+      // so this avoids a loop.
+      mathfieldRef.current.value = newLatex;
+    }
+  };
 
 
   const handleInsert = () => {
@@ -308,51 +323,34 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
             </div>
           </div>
 
-          <div className={styles.mathfieldContainer} id="mathfield-container">
-            {/* Render math-field directly as JSX */}
-            <math-field
-              ref={setupMathfield}
-              style={{
-                fontSize: '24px',
-                minHeight: '60px',
-                padding: '10px',
-                width: '100%',
-                display: 'block',
-                border: 'none',
-                outline: 'none',
-                background: 'transparent',
-                color: '#000',
-                position: 'relative'
-              }}
-              virtual-keyboard-mode="onfocus"
-            />
-          </div>
-
-          {/* Help Section */}
-          <div className={styles.helpSection}>
-            <strong className={styles.helpTitle}>⌨️ Quick Reference:</strong>
-            <div className={styles.helpGrid}>
-              <div>
-                <code>/</code> Fraction • <code>^</code> Power • <code>_</code> Subscript
-              </div>
-              <div>
-                <code>\sqrt</code> √ • <code>\int</code> ∫ • <code>\sum</code> Σ
-              </div>
-              <div>
-                <code>\pi</code> π • <code>\alpha</code> α • <code>\infty</code> ∞
-              </div>
+          <div className={styles.editorsRow}>
+            <div className={styles.mathfieldContainer} id="mathfield-container">
+              {/* Render math-field directly as JSX */}
+              <math-field
+                ref={setupMathfield}
+                style={{
+                  fontSize: '24px',
+                  minHeight: '60px',
+                  padding: '10px',
+                  width: '100%',
+                  flex: '1',
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  color: '#000',
+                  position: 'relative'
+                }}
+                virtual-keyboard-mode="onfocus"
+              />
             </div>
-            <div className={styles.helpProTips}>
-              <kbd>ESC</kbd> raw LaTeX • <kbd>Tab</kbd> next placeholder • Use virtual keyboard below for more symbols
+            <div className={styles.latexEditorContainer}>
+              <LatexCodeEditor value={editorLatex} onChange={handleCodeChange} />
             </div>
           </div>
         </div>
 
         {/* Footer */}
         <div className={styles.footer}>
-          <code className={styles.latexOutput}>
-            {latex || '(empty)'}
-          </code>
           <div className={styles.buttonGroup}>
             <button className={styles.cancelButton} onClick={handleClose}>
               Cancel
