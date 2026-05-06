@@ -157,7 +157,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
       ],
       tableCellProperties: {
         defaultProperties: {
-          horizontalAlignment: 'left',
+          horizontalAlignment: 'justify',
           padding: '0'
         }
       },

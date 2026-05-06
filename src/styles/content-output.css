@@ -127,6 +127,12 @@ p {
   text-align: justify;
 }
 
+td, th {
+  margin: 0;
+  padding: 0;
+  text-align: justify;
+}
+
 p.text-align-left { text-align: left; }
 p.text-align-center { text-align: center; }
 p.text-align-right { text-align: right; }
