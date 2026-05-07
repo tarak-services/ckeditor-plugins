@@ -93,6 +93,11 @@ const RichTextEditor = ({
 
   const handleReady = (editor) => {
     editorRef.current = editor;
+    
+    // Explicitly set variables for plugins that might need them
+    editor.config.set('qrCodeVariables', variables);
+    editor.config.set('variables', variables);
+
     const editable = editor.editing.view.document.getRoot();
     if (editable) {
       editor.editing.view.change((writer) => {
@@ -178,7 +183,7 @@ const RichTextEditor = ({
     mention: {
       feeds: [{
         marker: '@',
-        feed: variables.map(v => `@${v}`),
+        feed: variables.map(v => typeof v === 'object' && v !== null && v.key ? `@${v.key}` : `@${v}`),
         minimumCharacters: 0
       }]
     }

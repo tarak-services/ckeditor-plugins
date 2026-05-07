@@ -44,6 +44,10 @@ export default function createQRCodePlugin(CKEditor) {
   init() {
     const editor = this.editor;
 
+    // Register custom configuration properties
+    editor.config.define('qrCodeVariables', []);
+    editor.config.define('variables', []);
+
     // Configure schema to allow custom QR code attributes on images
     const schema = editor.model.schema;
 
@@ -276,7 +280,20 @@ export default function createQRCodePlugin(CKEditor) {
     const existingImageElement = editOptions?.imageElement || null;
 
     // Get variables from editor config (qrCodeVariables or from mention config)
-    const qrCodeVariables = editor.config.get('qrCodeVariables') || [];
+    let rawVariables = editor.config.get('qrCodeVariables') || editor.config.get('variables') || [];
+    
+    // Normalize variables to {key, label} format
+    const qrCodeVariables = rawVariables.map(v => {
+      if (typeof v === 'string') {
+        // Convert camelCase or SCREAMING_SNAKE_CASE to Title Case for label
+        const label = v.replace(/_/g, ' ')
+                       .replace(/([A-Z])/g, ' $1')
+                       .replace(/^./, str => str.toUpperCase())
+                       .trim();
+        return { key: v, label };
+      }
+      return v;
+    });
 
     // Escape HTML to prevent XSS
     const escapeHtml = (text) => {
