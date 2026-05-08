@@ -21,6 +21,8 @@
     "react-select": "^5.0.0"
   },
   "dependencies": {
+    "ckeditor5": "^47.2.0",
+    "ckeditor5-premium-features": "^47.2.0",
     "jsbarcode": "^3.12.3",
     "mathlive": "^0.108.2",
     "qrcode": "^1.5.4"
