@@ -43,6 +43,42 @@ export default function createKeyboardShortcutsPlugin(CKEditor) {
     },
     {
       group: 'Spacing & hyphens',
+      label: 'Em space',
+      text: '\u2003',
+      keystroke: 'Ctrl+Alt+M'
+    },
+    {
+      group: 'Spacing & hyphens',
+      label: 'En space',
+      text: '\u2002',
+      keystroke: 'Ctrl+Alt+N'
+    },
+    {
+      group: 'Spacing & hyphens',
+      label: 'Thin space',
+      text: '\u2009',
+      keystroke: 'Ctrl+Alt+H'
+    },
+    {
+      group: 'Spacing & hyphens',
+      label: 'Figure space',
+      text: '\u2007',
+      keystroke: 'Ctrl+Alt+F'
+    },
+    {
+      group: 'Spacing & hyphens',
+      label: 'Zero-width joiner (ZWJ)',
+      text: '\u200D',
+      keystroke: 'Ctrl+Alt+J'
+    },
+    {
+      group: 'Spacing & hyphens',
+      label: 'Zero-width non-joiner (ZWNJ)',
+      text: '\u200C',
+      keystroke: 'Ctrl+Alt+X'
+    },
+    {
+      group: 'Spacing & hyphens',
       label: 'Non-breaking hyphen',
       text: '\u2011',
       keystroke: 'Ctrl+Shift+-'
