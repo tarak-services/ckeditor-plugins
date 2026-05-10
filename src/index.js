@@ -10,6 +10,7 @@ import createFontSizeSearchPlugin from './plugins/FontSizeSearchPlugin.js';
 import createFontSymbolSelectorPlugin from './plugins/FontSymbolSelectorPlugin.jsx';
 import createImageDPIScalePlugin from './plugins/ImageDPIScalePlugin.js';
 import createImageVerticalAlignPlugin from './plugins/ImageVerticalAlignPlugin.js';
+import createKeyboardShortcutsPlugin from './plugins/KeyboardShortcutsPlugin.js';
 import createLineHeightPlugin from './plugins/LineHeightPlugin.jsx';
 import createMarginBottomPlugin from './plugins/MarginBottomPlugin.js';
 import createMarginTopPlugin from './plugins/MarginTopPlugin.js';
@@ -38,6 +39,7 @@ export {
   createFontSymbolSelectorPlugin,
   createImageDPIScalePlugin,
   createImageVerticalAlignPlugin,
+  createKeyboardShortcutsPlugin,
   createLineHeightPlugin,
   createMarginBottomPlugin,
   createMarginTopPlugin,
@@ -86,6 +88,7 @@ export function createAllPlugins(CKEditor, options = {}) {
     FontSymbolSelectorPlugin: createFontSymbolSelectorPlugin(CKEditor, { getAvailableFonts, getFontSupportedGlyphs }),
     ImageDPIScalePlugin: createImageDPIScalePlugin(CKEditor),
     ImageVerticalAlignPlugin: createImageVerticalAlignPlugin(CKEditor),
+    KeyboardShortcutsPlugin: createKeyboardShortcutsPlugin(CKEditor),
     LineHeightPlugin: createLineHeightPlugin(CKEditor),
     MarginBottomPlugin: createMarginBottomPlugin(CKEditor),
     MarginTopPlugin: createMarginTopPlugin(CKEditor),

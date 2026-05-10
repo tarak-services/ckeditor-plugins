@@ -19,6 +19,7 @@ import createFontSymbolSelectorPlugin from '../plugins/FontSymbolSelectorPlugin.
 import createUnderlineOffsetPlugin from '../plugins/UnderlineOffsetPlugin.js';
 import createTableColumnResizeOverridePlugin from '../plugins/TableColumnResizeOverridePlugin.js';
 import createCustomTableColumnResizePlugin from '../plugins/CustomTableColumnResizePlugin.js';
+import createKeyboardShortcutsPlugin from '../plugins/KeyboardShortcutsPlugin.js';
 import createSoftBreakVisibilityPlugin from '../plugins/SoftBreakVisibilityPlugin.js';
 import createSupSubLineHeightPlugin from '../plugins/SupSubLineHeightPlugin.js';
 import createCurlyQuotesPlugin from '../plugins/CurlyQuotesPlugin.js';
@@ -134,6 +135,7 @@ const RichTextEditor = ({
     UnderlineOffsetPlugin: createUnderlineOffsetPlugin(CKEditorCombined),
     TableColumnResizeOverridePlugin: createTableColumnResizeOverridePlugin(CKEditorCombined),
     CustomTableColumnResizePlugin: createCustomTableColumnResizePlugin(CKEditorCombined),
+    KeyboardShortcutsPlugin: createKeyboardShortcutsPlugin(CKEditorCombined),
     SoftBreakVisibilityPlugin: createSoftBreakVisibilityPlugin(CKEditorCombined),
     SupSubLineHeightPlugin: createSupSubLineHeightPlugin(CKEditorCombined),
     CurlyQuotesPlugin: createCurlyQuotesPlugin(CKEditorCombined),

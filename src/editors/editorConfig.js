@@ -108,7 +108,8 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     ...(customPlugins.EnglishTextPlugin ? [customPlugins.EnglishTextPlugin] : []),
     ...(customPlugins.FontDropdownLabelsPlugin ? [customPlugins.FontDropdownLabelsPlugin] : []),
     ...(customPlugins.MarginBottomPlugin ? [customPlugins.MarginBottomPlugin] : []),
-    ...(customPlugins.MarginTopPlugin ? [customPlugins.MarginTopPlugin] : [])
+    ...(customPlugins.MarginTopPlugin ? [customPlugins.MarginTopPlugin] : []),
+    ...(customPlugins.KeyboardShortcutsPlugin ? [customPlugins.KeyboardShortcutsPlugin] : [])
   ];
 
   // Shared default configuration
@@ -129,7 +130,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
         'alignment', 'textAlignLast', 'textDirectionLTR', 'textDirectionRTL', '|',
         'bulletedList', 'numberedList', '|',
         'insertTableLayout', 'tableStyles', '|',
-        'MathLive', 'FontSymbolSelector', 'curlyQuotes', '|',
+        'MathLive', 'FontSymbolSelector', 'curlyQuotes', 'keyboardShortcuts', '|',
         'imageUpload', 'insertQRCode', '|',
         'sourceEditing', '|',
         'marginTop', 'marginBottom', '|',
