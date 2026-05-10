@@ -37,6 +37,12 @@ export default function createKeyboardShortcutsPlugin(CKEditor) {
     },
     {
       group: 'Spacing & hyphens',
+      label: 'Zero-width space',
+      text: '\u200B',
+      keystroke: 'Ctrl+Alt+Z'
+    },
+    {
+      group: 'Spacing & hyphens',
       label: 'Non-breaking hyphen',
       text: '\u2011',
       keystroke: 'Ctrl+Shift+-'
