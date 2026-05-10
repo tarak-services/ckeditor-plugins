@@ -117,6 +117,8 @@ export default function createKeyboardShortcutsPlugin(CKEditor) {
           withText: false
         });
 
+        dropdownView.panelPosition = 'sw';
+
         const items = new Collection();
         let lastGroup = null;
 

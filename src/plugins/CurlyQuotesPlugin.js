@@ -33,6 +33,8 @@ export default function createCurlyQuotesPlugin(CKEditor) {
           withText: false
         });
 
+        dropdownView.panelPosition = 'sw';
+
         const items = new Collection();
 
         quotes.forEach(quote => {
