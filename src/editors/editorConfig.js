@@ -206,7 +206,23 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
           styles: true
         }
       ],
-      disallow: []
+      // Let our custom QR/Barcode plugins own these attributes; otherwise
+      // GHS independently stores stale copies in htmlImgAttributes and
+      // overwrites our updates during view re-render (e.g. user changes
+      // QR size 15 -> 20 but GHS writes 15 back).
+      disallow: [
+        {
+          name: 'img',
+          attributes: [
+            'data-qrcode-value',
+            'data-qrcode-size',
+            'data-barcode-value',
+            'data-barcode-format',
+            'data-barcode-height',
+            'data-barcode-showtext'
+          ]
+        }
+      ]
     },
     alignment: {
       options: [

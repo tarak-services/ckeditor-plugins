@@ -306,30 +306,27 @@ export default function createQRCodePlugin(CKEditor) {
           return;
         }
 
-        console.log('modelElement', modelElement);
         // Check if it's a QR code image - try model first, then DOM as fallback
         let qrCodeValue = modelElement.getAttribute('data-qrcode-value');
-        let sizeAttr = modelElement.getAttribute('data-qrcode-size');
         let alt = modelElement.getAttribute('alt') || '';
 
-        // Also check DOM attributes as fallback (always check for size even if qrCodeValue exists)
         if (!qrCodeValue) {
           qrCodeValue = domTarget.getAttribute('data-qrcode-value');
-        }
-        if (!sizeAttr) {
-          sizeAttr = domTarget.getAttribute('data-qrcode-size');
         }
         if (!alt) {
           alt = domTarget.getAttribute('alt') || '';
         }
 
-        // Also try to get size from width/height attributes if data-qrcode-size is not found
-        if (!sizeAttr) {
-          const width = modelElement.getAttribute('width') || domTarget.getAttribute('width');
-          if (width) {
-            sizeAttr = width;
-          }
-        }
+        // Size: prefer the live width attribute (source of truth in CKEditor,
+        // updated natively and visible to the user). Fall back to height,
+        // then to legacy data-qrcode-size, then to default 15.
+        let sizeAttr =
+          modelElement.getAttribute('width') ||
+          domTarget.getAttribute('width') ||
+          modelElement.getAttribute('height') ||
+          domTarget.getAttribute('height') ||
+          modelElement.getAttribute('data-qrcode-size') ||
+          domTarget.getAttribute('data-qrcode-size');
 
         // Check alt attribute for QR code marker
         if (!qrCodeValue && alt && alt.startsWith('QR Code: ')) {
