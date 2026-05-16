@@ -73,12 +73,29 @@ export default function createQRCodePlugin(CKEditor) {
           return;
         }
         const viewWriter = conversionApi.writer;
-        const img = conversionApi.mapper.toViewElement(data.item);
-        if (img) {
-          if (data.attributeNewValue) {
-            viewWriter.setAttribute('data-qrcode-value', data.attributeNewValue, img);
+        let viewElement = conversionApi.mapper.toViewElement(data.item);
+        
+        if (viewElement) {
+          // In CKEditor 5, the view element for imageInline is a span wrapping an img
+          // We need to find the actual img element
+          let img = null;
+          if (viewElement.is('element', 'img')) {
+            img = viewElement;
           } else {
-            viewWriter.removeAttribute('data-qrcode-value', img);
+            for (const child of viewElement.getChildren()) {
+              if (child.is('element', 'img')) {
+                img = child;
+                break;
+              }
+            }
+          }
+
+          if (img) {
+            if (data.attributeNewValue) {
+              viewWriter.setAttribute('data-qrcode-value', data.attributeNewValue, img);
+            } else {
+              viewWriter.removeAttribute('data-qrcode-value', img);
+            }
           }
         }
       });
@@ -88,12 +105,89 @@ export default function createQRCodePlugin(CKEditor) {
           return;
         }
         const viewWriter = conversionApi.writer;
-        const img = conversionApi.mapper.toViewElement(data.item);
-        if (img) {
-          if (data.attributeNewValue) {
-            viewWriter.setAttribute('data-qrcode-size', data.attributeNewValue, img);
+        let viewElement = conversionApi.mapper.toViewElement(data.item);
+        
+        if (viewElement) {
+          // Find the actual img element
+          let img = null;
+          if (viewElement.is('element', 'img')) {
+            img = viewElement;
           } else {
-            viewWriter.removeAttribute('data-qrcode-size', img);
+            for (const child of viewElement.getChildren()) {
+              if (child.is('element', 'img')) {
+                img = child;
+                break;
+              }
+            }
+          }
+
+          if (img) {
+            if (data.attributeNewValue) {
+              viewWriter.setAttribute('data-qrcode-size', data.attributeNewValue, img);
+            } else {
+              viewWriter.removeAttribute('data-qrcode-size', img);
+            }
+          }
+        }
+      });
+      
+      // Also handle imageBlock
+      dispatcher.on('attribute:data-qrcode-value:imageBlock', (evt, data, conversionApi) => {
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
+        const viewWriter = conversionApi.writer;
+        let viewElement = conversionApi.mapper.toViewElement(data.item);
+        
+        if (viewElement) {
+          let img = null;
+          if (viewElement.is('element', 'img')) {
+            img = viewElement;
+          } else {
+            for (const child of viewElement.getChildren()) {
+              if (child.is('element', 'img')) {
+                img = child;
+                break;
+              }
+            }
+          }
+
+          if (img) {
+            if (data.attributeNewValue) {
+              viewWriter.setAttribute('data-qrcode-value', data.attributeNewValue, img);
+            } else {
+              viewWriter.removeAttribute('data-qrcode-value', img);
+            }
+          }
+        }
+      });
+
+      dispatcher.on('attribute:data-qrcode-size:imageBlock', (evt, data, conversionApi) => {
+        if (!conversionApi.consumable.consume(data.item, evt.name)) {
+          return;
+        }
+        const viewWriter = conversionApi.writer;
+        let viewElement = conversionApi.mapper.toViewElement(data.item);
+        
+        if (viewElement) {
+          let img = null;
+          if (viewElement.is('element', 'img')) {
+            img = viewElement;
+          } else {
+            for (const child of viewElement.getChildren()) {
+              if (child.is('element', 'img')) {
+                img = child;
+                break;
+              }
+            }
+          }
+
+          if (img) {
+            if (data.attributeNewValue) {
+              viewWriter.setAttribute('data-qrcode-size', data.attributeNewValue, img);
+            } else {
+              viewWriter.removeAttribute('data-qrcode-size', img);
+            }
           }
         }
       });
@@ -111,7 +205,12 @@ export default function createQRCodePlugin(CKEditor) {
         if (!modelElement) return;
 
         const qrValue = viewItem.getAttribute('data-qrcode-value');
-        const qrSize = viewItem.getAttribute('data-qrcode-size');
+        let qrSize = viewItem.getAttribute('data-qrcode-size');
+
+        // Fallback to width attribute if data-qrcode-size is missing
+        if (!qrSize) {
+          qrSize = viewItem.getAttribute('width');
+        }
 
         if (qrValue) {
           conversionApi.writer.setAttribute('data-qrcode-value', qrValue, modelElement);
@@ -541,42 +640,45 @@ export default function createQRCodePlugin(CKEditor) {
       editor.model.change(writer => {
         if (isEditing) {
           const selection = editor.model.document.selection;
-          let elementToReplace = null;
+          let elementToReplace = existingImageElement;
 
-          // Try to find the image element to replace
-          const selectedElement = selection.getSelectedElement();
-          if (selectedElement && selectedElement.is && selectedElement.is('element', 'imageInline')) {
-            elementToReplace = selectedElement;
-          } else {
-            // Check nodes near the selection
-            const position = selection.getFirstPosition();
-            const nodeBefore = position.nodeBefore;
-            const nodeAfter = position.nodeAfter;
+          if (!elementToReplace) {
+            // Try to find the image element to replace
+            const selectedElement = selection.getSelectedElement();
+            if (selectedElement && (selectedElement.name === 'imageInline' || selectedElement.name === 'imageBlock')) {
+              elementToReplace = selectedElement;
+            } else {
+              // Check nodes near the selection
+              const position = selection.getFirstPosition();
+              const nodeBefore = position.nodeBefore;
+              const nodeAfter = position.nodeAfter;
 
-            if (nodeBefore && nodeBefore.is && nodeBefore.is('element', 'imageInline')) {
-              elementToReplace = nodeBefore;
-            } else if (nodeAfter && nodeAfter.is && nodeAfter.is('element', 'imageInline')) {
-              elementToReplace = nodeAfter;
+              if (nodeBefore && (nodeBefore.name === 'imageInline' || nodeBefore.name === 'imageBlock')) {
+                elementToReplace = nodeBefore;
+              } else if (nodeAfter && (nodeAfter.name === 'imageInline' || nodeAfter.name === 'imageBlock')) {
+                elementToReplace = nodeAfter;
+              }
             }
           }
 
-          // Create the new image element
-          const imageElement = writer.createElement('imageInline', {
-            src: dataUrl,
-            alt: `QR Code: ${text}`,
-            width: size.toString(),
-            height: size.toString(),
-            'data-qrcode-value': text,
-            'data-qrcode-size': size.toString()
-          });
-
-          if (elementToReplace && elementToReplace.is && elementToReplace.is('element', 'imageInline')) {
-            // Replace the existing image
-            const position = writer.createPositionBefore(elementToReplace);
-            writer.remove(elementToReplace);
-            editor.model.insertContent(imageElement, position);
+          if (elementToReplace) {
+            // Update attributes on the existing element
+            writer.setAttribute('src', dataUrl, elementToReplace);
+            writer.setAttribute('alt', `QR Code: ${text}`, elementToReplace);
+            writer.setAttribute('width', size.toString(), elementToReplace);
+            writer.setAttribute('height', size.toString(), elementToReplace);
+            writer.setAttribute('data-qrcode-value', text, elementToReplace);
+            writer.setAttribute('data-qrcode-size', size.toString(), elementToReplace);
           } else {
             // If we can't find the element, just insert a new one
+            const imageElement = writer.createElement('imageInline', {
+              src: dataUrl,
+              alt: `QR Code: ${text}`,
+              width: size.toString(),
+              height: size.toString(),
+              'data-qrcode-value': text,
+              'data-qrcode-size': size.toString()
+            });
             const insertPosition = selection.getFirstPosition();
             editor.model.insertContent(imageElement, insertPosition);
           }

@@ -105,12 +105,59 @@ export default function createBarcodePlugin(CKEditor) {
               return;
             }
             const viewWriter = conversionApi.writer;
-            const img = conversionApi.mapper.toViewElement(data.item);
-            if (img) {
-              if (data.attributeNewValue) {
-                viewWriter.setAttribute(attrName, data.attributeNewValue, img);
+            let viewElement = conversionApi.mapper.toViewElement(data.item);
+            
+            if (viewElement) {
+              // Find the actual img element
+              let img = null;
+              if (viewElement.is('element', 'img')) {
+                img = viewElement;
               } else {
-                viewWriter.removeAttribute(attrName, img);
+                for (const child of viewElement.getChildren()) {
+                  if (child.is('element', 'img')) {
+                    img = child;
+                    break;
+                  }
+                }
+              }
+
+              if (img) {
+                if (data.attributeNewValue) {
+                  viewWriter.setAttribute(attrName, data.attributeNewValue, img);
+                } else {
+                  viewWriter.removeAttribute(attrName, img);
+                }
+              }
+            }
+          });
+
+          // Also handle imageBlock
+          dispatcher.on(`attribute:${attrName}:imageBlock`, (evt, data, conversionApi) => {
+            if (!conversionApi.consumable.consume(data.item, evt.name)) {
+              return;
+            }
+            const viewWriter = conversionApi.writer;
+            let viewElement = conversionApi.mapper.toViewElement(data.item);
+            
+            if (viewElement) {
+              let img = null;
+              if (viewElement.is('element', 'img')) {
+                img = viewElement;
+              } else {
+                for (const child of viewElement.getChildren()) {
+                  if (child.is('element', 'img')) {
+                    img = child;
+                    break;
+                  }
+                }
+              }
+
+              if (img) {
+                if (data.attributeNewValue) {
+                  viewWriter.setAttribute(attrName, data.attributeNewValue, img);
+                } else {
+                  viewWriter.removeAttribute(attrName, img);
+                }
               }
             }
           });
@@ -568,20 +615,30 @@ export default function createBarcodePlugin(CKEditor) {
 
             if (isEditing) {
               const selection = editor.model.document.selection;
-              let elementToReplace = selection.getSelectedElement();
+              let elementToReplace = editOptions?.imageElement || null;
 
-              if (!elementToReplace || !elementToReplace.is('element', 'imageInline')) {
-                const position = selection.getFirstPosition();
-                elementToReplace = position.nodeBefore || position.nodeAfter;
+              if (!elementToReplace) {
+                elementToReplace = selection.getSelectedElement();
+                if (!elementToReplace || (!elementToReplace.is('element', 'imageInline') && !elementToReplace.is('element', 'imageBlock'))) {
+                  const position = selection.getFirstPosition();
+                  if (position) {
+                    const nodeBefore = position.nodeBefore;
+                    const nodeAfter = position.nodeAfter;
+                    if (nodeBefore && (nodeBefore.is('element', 'imageInline') || nodeBefore.is('element', 'imageBlock'))) {
+                      elementToReplace = nodeBefore;
+                    } else if (nodeAfter && (nodeAfter.is('element', 'imageInline') || nodeAfter.is('element', 'imageBlock'))) {
+                      elementToReplace = nodeAfter;
+                    }
+                  }
+                }
               }
 
-              const imageElement = writer.createElement('imageInline', imageAttrs);
-
-              if (elementToReplace && elementToReplace.is('element', 'imageInline')) {
-                const position = writer.createPositionBefore(elementToReplace);
-                writer.remove(elementToReplace);
-                editor.model.insertContent(imageElement, position);
+              if (elementToReplace) {
+                for (const [key, value] of Object.entries(imageAttrs)) {
+                  writer.setAttribute(key, value, elementToReplace);
+                }
               } else {
+                const imageElement = writer.createElement('imageInline', imageAttrs);
                 editor.model.insertContent(imageElement, selection.getFirstPosition());
               }
             } else {
