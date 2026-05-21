@@ -67,6 +67,13 @@ export { useCKEditorFonts } from './hooks/useCKEditorFonts.js';
 export * from './utils/ckeditorUtils.js';
 export * from './utils/dropdownSearchUtils.js';
 export { replaceFracWithCfrac } from './utils/fracReplace.js';
+export {
+  applyMathLatexMarginStyles,
+  extractMathMarginsFromElement,
+  extractMathMarginsFromView,
+  findMathLatexElement,
+  syncMathMarginDataAttributes
+} from './utils/mathMarginUtils.js';
 
 // Helper to create all plugins at once
 // Options:

@@ -220,7 +220,9 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
           const span = writer.createContainerElement('span', {
             class: 'math-tex',
             'data-latex': latex,
-            'data-render-format': format
+            'data-render-format': format,
+            ...(marginTop ? { 'data-margin-top': marginTop } : {}),
+            ...(marginBottom ? { 'data-margin-bottom': marginBottom } : {})
           });
 
           const renderedContent = writer.createRawElement('span', {

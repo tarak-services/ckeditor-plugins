@@ -57,11 +57,18 @@ export function findMathLatexViewElement(viewElement) {
 }
 
 export function extractMathMarginsFromView(viewElement) {
-  const latexView = findMathLatexViewElement(viewElement);
   const margins = {
-    marginTop: latexView?.getStyle('margin-top') || '',
-    marginBottom: latexView?.getStyle('margin-bottom') || ''
+    marginTop: viewElement.getAttribute('data-margin-top') || '',
+    marginBottom: viewElement.getAttribute('data-margin-bottom') || ''
   };
+
+  const latexView = findMathLatexViewElement(viewElement);
+  if (!margins.marginTop) {
+    margins.marginTop = latexView?.getStyle('margin-top') || '';
+  }
+  if (!margins.marginBottom) {
+    margins.marginBottom = latexView?.getStyle('margin-bottom') || '';
+  }
 
   // Legacy content may have margins on the outer math wrapper.
   if (!margins.marginTop) {
@@ -72,4 +79,43 @@ export function extractMathMarginsFromView(viewElement) {
   }
 
   return margins;
+}
+
+export function extractMathMarginsFromElement(element) {
+  if (!element) {
+    return { marginTop: '', marginBottom: '' };
+  }
+
+  const margins = {
+    marginTop: element.getAttribute('data-margin-top') || '',
+    marginBottom: element.getAttribute('data-margin-bottom') || ''
+  };
+
+  const latexEl = findMathLatexElement(element);
+  if (!margins.marginTop) {
+    margins.marginTop = latexEl?.style.marginTop || element.style.marginTop || '';
+  }
+  if (!margins.marginBottom) {
+    margins.marginBottom = latexEl?.style.marginBottom || element.style.marginBottom || '';
+  }
+
+  return margins;
+}
+
+export function syncMathMarginDataAttributes(element, { marginTop = '', marginBottom = '' } = {}) {
+  if (!element) {
+    return;
+  }
+
+  if (marginTop) {
+    element.setAttribute('data-margin-top', marginTop);
+  } else {
+    element.removeAttribute('data-margin-top');
+  }
+
+  if (marginBottom) {
+    element.setAttribute('data-margin-bottom', marginBottom);
+  } else {
+    element.removeAttribute('data-margin-bottom');
+  }
 }
