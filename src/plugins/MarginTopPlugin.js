@@ -39,6 +39,8 @@ export default function createMarginTopPlugin(CKEditor) {
 
       if (!element) return;
 
+      const isMathFormula = element.name === 'mathFormula';
+
       model.change(writer => {
         if (value && value.trim()) {
           writer.setAttribute('marginTop', value.trim(), element);
@@ -46,6 +48,10 @@ export default function createMarginTopPlugin(CKEditor) {
           writer.removeAttribute('marginTop', element);
         }
       });
+
+      if (isMathFormula) {
+        this.editor.editing.reconvertItem(element);
+      }
     }
 
     /**
@@ -187,7 +193,7 @@ export default function createMarginTopPlugin(CKEditor) {
       });
 
       // Also extend specific elements that might not be $block
-      const additionalElements = ['imageInline', 'imageBlock', 'table', 'tableRow', 'tableCell'];
+      const additionalElements = ['imageInline', 'imageBlock', 'table', 'tableRow', 'tableCell', 'mathFormula'];
       for (const elementName of additionalElements) {
         if (editor.model.schema.isRegistered(elementName)) {
           editor.model.schema.extend(elementName, {
@@ -213,6 +219,10 @@ export default function createMarginTopPlugin(CKEditor) {
           // For images in figures, target the img element
           let targetElement = viewElement;
           const modelName = data.item.name;
+          if (modelName === 'mathFormula') {
+            writer.removeStyle('margin-top', viewElement);
+            return;
+          }
           if (modelName === 'imageBlock' && viewElement.is('element', 'figure')) {
             for (const child of viewElement.getChildren()) {
               if (child.is('element', 'img')) {

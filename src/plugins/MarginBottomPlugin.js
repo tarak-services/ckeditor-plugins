@@ -35,6 +35,8 @@ export default function createMarginBottomPlugin(CKEditor) {
 
       if (!element) return;
 
+      const isMathFormula = element.name === 'mathFormula';
+
       model.change(writer => {
         if (value && value.trim()) {
           writer.setAttribute('marginBottom', value.trim(), element);
@@ -42,6 +44,10 @@ export default function createMarginBottomPlugin(CKEditor) {
           writer.removeAttribute('marginBottom', element);
         }
       });
+
+      if (isMathFormula) {
+        this.editor.editing.reconvertItem(element);
+      }
     }
 
     /**
@@ -166,7 +172,7 @@ export default function createMarginBottomPlugin(CKEditor) {
         allowAttributes: 'marginBottom'
       });
 
-      const additionalElements = ['imageInline', 'imageBlock', 'table', 'tableRow', 'tableCell'];
+      const additionalElements = ['imageInline', 'imageBlock', 'table', 'tableRow', 'tableCell', 'mathFormula'];
       for (const elementName of additionalElements) {
         if (editor.model.schema.isRegistered(elementName)) {
           editor.model.schema.extend(elementName, {
@@ -190,6 +196,10 @@ export default function createMarginBottomPlugin(CKEditor) {
 
           let targetElement = viewElement;
           const modelName = data.item.name;
+          if (modelName === 'mathFormula') {
+            writer.removeStyle('margin-bottom', viewElement);
+            return;
+          }
           if (modelName === 'imageBlock' && viewElement.is('element', 'figure')) {
             for (const child of viewElement.getChildren()) {
               if (child.is('element', 'img')) {

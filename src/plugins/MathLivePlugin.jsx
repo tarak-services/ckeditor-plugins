@@ -4,6 +4,7 @@ import 'mathlive/static.css';  // Required for convertLatexToMarkup rendered out
 import MathLiveDialog from './MathLiveDialog.jsx';
 import MathLiveErrorBoundary from './MathLiveErrorBoundary.jsx';
 import { replaceFracWithCfrac } from '../utils/fracReplace';
+import { applyMathLatexMarginStyles, extractMathMarginsFromView } from '../utils/mathMarginUtils';
 
 // We'll import MathLive functions dynamically to avoid interfering with initialization
 let convertLatexToMarkup = null;
@@ -134,10 +135,13 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
             latex = viewElement.getChild(0)?.data || '';
           }
           const format = viewElement.getAttribute('data-render-format') || mathRenderFormat;
+          const margins = extractMathMarginsFromView(viewElement);
           return writer.createElement('mathFormula', {
             latex,
             display: 'inline',
-            renderFormat: format
+            renderFormat: format,
+            ...(margins.marginTop ? { marginTop: margins.marginTop } : {}),
+            ...(margins.marginBottom ? { marginBottom: margins.marginBottom } : {})
           });
         }
       });
@@ -150,10 +154,13 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         model: (viewElement, { writer }) => {
           const latex = viewElement.getAttribute('data-latex') || '';
           const format = viewElement.getAttribute('data-render-format') || mathRenderFormat;
+          const margins = extractMathMarginsFromView(viewElement);
           return writer.createElement('mathFormula', {
             latex,
             display: 'inline',
-            renderFormat: format
+            renderFormat: format,
+            ...(margins.marginTop ? { marginTop: margins.marginTop } : {}),
+            ...(margins.marginBottom ? { marginBottom: margins.marginBottom } : {})
           });
         }
       });
@@ -180,6 +187,8 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         view: (modelElement, { writer }) => {
           const latex = modelElement.getAttribute('latex') || '';
           const format = modelElement.getAttribute('renderFormat') || mathRenderFormat;
+          const marginTop = modelElement.getAttribute('marginTop') || '';
+          const marginBottom = modelElement.getAttribute('marginBottom') || '';
 
           const span = writer.createContainerElement('span', {
             class: 'math-formula-widget',
@@ -191,7 +200,7 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
             class: 'math-formula-render',
             style: 'display: inline-block; vertical-align: baseline;'
           }, (domElement) => {
-            this._renderMath(domElement, latex, format);
+            this._renderMath(domElement, latex, format, { marginTop, marginBottom });
           });
 
           writer.insert(writer.createPositionAt(span, 0), mathSpan);
@@ -205,6 +214,8 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         view: (modelElement, { writer }) => {
           const latex = modelElement.getAttribute('latex') || '';
           const format = modelElement.getAttribute('renderFormat') || mathRenderFormat;
+          const marginTop = modelElement.getAttribute('marginTop') || '';
+          const marginBottom = modelElement.getAttribute('marginBottom') || '';
 
           const span = writer.createContainerElement('span', {
             class: 'math-tex',
@@ -215,7 +226,7 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
           const renderedContent = writer.createRawElement('span', {
             class: 'math-formula-render'
           }, (domElement) => {
-            this._renderMath(domElement, latex, format);
+            this._renderMath(domElement, latex, format, { marginTop, marginBottom });
           });
 
           writer.insert(writer.createPositionAt(span, 0), renderedContent);
@@ -301,7 +312,7 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
       });
     }
 
-    _renderMath(element, latex, format) {
+    _renderMath(element, latex, format, margins = {}) {
       if (!latex) {
         element.textContent = '(empty formula)';
         element.style.color = '#999';
@@ -339,6 +350,8 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
       } else {
         this._renderFallback(element, latex);
       }
+
+      applyMathLatexMarginStyles(element, margins);
     }
 
     /**
