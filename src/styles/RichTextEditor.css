@@ -285,7 +285,7 @@
    like images/tables. Overflow goes on the OUTER wrapper (.math-formula-widget). */
 .ck.ck-editor__editable .math-formula-widget {
   max-width: 100%;
-  display: inline-block;
+  display: inline-flex;
   vertical-align: baseline;
   overflow: hidden;
 }

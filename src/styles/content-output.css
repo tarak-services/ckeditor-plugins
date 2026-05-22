@@ -113,7 +113,7 @@ img[alt^="QR Code:"] {
 .math-tex,
 .math-formula-widget {
   max-width: 100%;
-  display: inline-block;
+  display: inline-flex;
   vertical-align: baseline;
   overflow: hidden;
 }
