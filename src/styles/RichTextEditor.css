@@ -281,11 +281,32 @@
 }
 
 
+/* Clip overly-long math equations inside the editor to the column width,
+   like images/tables. Overflow goes on the OUTER wrapper (.math-formula-widget). */
+.ck.ck-editor__editable .math-formula-widget {
+  max-width: 100%;
+  display: inline-block;
+  vertical-align: baseline;
+  overflow: hidden;
+}
+
 .ck.ck-editor__editable .math-formula-render {
   padding: 0px;
   margin: 0px;
-  border:0px;
+  border: 0px;
   background: none;
+  display: inline-block;
+  vertical-align: baseline;
+  max-width: 100%;
+}
+
+/* Allow flex children to shrink below their math content's intrinsic width */
+.ck.ck-editor__editable td,
+.ck.ck-editor__editable th,
+.ck.ck-editor__editable p {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 .ck.ck-editor__editable .math-formula-widget * {
   cursor: pointer !important;
