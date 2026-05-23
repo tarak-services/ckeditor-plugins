@@ -97,3 +97,20 @@ export function replaceFracWithCfrac(latex) {
 
   return result;
 }
+
+/**
+ * Replace \int with \intop for better integral rendering in MathLive.
+ *
+ * \intop stacks limits above/below in display style and reads more clearly
+ * than the default slanted \int with adjacent limits.
+ *
+ * Skips \intop, \iint, \intclockwise, and other longer commands.
+ */
+export function replaceIntWithIntop(latex) {
+  return latex.replace(/\\int(?![a-zA-Z])/g, '\\intop');
+}
+
+/** Apply MathLive render-time LaTeX normalizations. */
+export function prepareMathLatexForRender(latex) {
+  return replaceIntWithIntop(replaceFracWithCfrac(latex));
+}

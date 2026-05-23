@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import 'mathlive/static.css';  // Required for convertLatexToMarkup rendered output
 import MathLiveDialog from './MathLiveDialog.jsx';
 import MathLiveErrorBoundary from './MathLiveErrorBoundary.jsx';
-import { replaceFracWithCfrac } from '../utils/fracReplace';
+import { prepareMathLatexForRender } from '../utils/fracReplace';
 import { applyMathLatexMarginStyles, extractMathMarginsFromView } from '../utils/mathMarginUtils';
 
 // We'll import MathLive functions dynamically to avoid interfering with initialization
@@ -321,7 +321,7 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         return;
       }
 
-      const latexToRender = replaceFracWithCfrac(latex);
+      const latexToRender = prepareMathLatexForRender(latex);
       const useFormat = format || mathRenderFormat;
       const renderOptions = {
         letterShapeStyle: 'upright',

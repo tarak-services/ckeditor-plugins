@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Select from 'react-select';
 import 'mathlive/fonts.css';
 import 'mathlive';
@@ -6,6 +6,7 @@ import styles from './MathLivePlugin.module.css';
 import mathEditorCss from '../styles/MathLiveEditor.css?inline'; // Import CSS as string
 import LatexCodeEditor from '../components/LatexCodeEditor/LatexCodeEditor.jsx';
 import { formatLatexForEditor } from '../utils/latexFormatter.js';
+import { prepareMathLatexForRender } from '../utils/fracReplace.js';
 
 // Suppress ResizeObserver errors (harmless warnings from MathLive keyboard)
 if (typeof window !== 'undefined') {
@@ -50,8 +51,14 @@ const decomposeOperators = (latex) =>
   latex.replace(OPERATOR_RE, (m) => m.slice(1));
 
 const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, onClose, availableFonts, getAvailableFonts }) => {
-  const [latex, setLatex] = useState(initialLatex || '');
-  const [editorLatex, setEditorLatex] = useState(initialLatex ? formatLatexForEditor(initialLatex) : '');
+  // Normalize incoming LaTeX so the editor opens in the same shape it will render/persist as.
+  // Only the very first creation can show the raw form (before user opens this dialog again).
+  const preparedInitial = useMemo(
+    () => (initialLatex ? prepareMathLatexForRender(initialLatex) : ''),
+    [initialLatex]
+  );
+  const [latex, setLatex] = useState(preparedInitial);
+  const [editorLatex, setEditorLatex] = useState(preparedInitial ? formatLatexForEditor(preparedInitial) : '');
   const [isMounted, setIsMounted] = useState(false);
   const [fontOptions, setFontOptions] = useState([]);
   const [renderFormat, setRenderFormat] = useState(initialRenderFormat || 'markup');
@@ -105,8 +112,7 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
     style.textContent = mathEditorCss + '\n' + overrideCss;
     element.shadowRoot.appendChild(style);
 
-    // Set initial value
-    element.value = initialLatex || '';
+    element.value = preparedInitial;
 
     // Listen for changes
     const handleInput = () => {
@@ -131,13 +137,12 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
     }, 100);
 
     // Note: cleanup is handled by React when component unmounts
-  }, [initialLatex]);
+  }, [preparedInitial]);
 
-  // Reset state when dialog opens/closes
   useEffect(() => {
     if (isOpen) {
-      setLatex(initialLatex || '');
-      setEditorLatex(initialLatex ? formatLatexForEditor(initialLatex) : '');
+      setLatex(preparedInitial);
+      setEditorLatex(preparedInitial ? formatLatexForEditor(preparedInitial) : '');
       setRenderFormat(initialRenderFormat || 'markup');
       setIsMounted(false);
     }
@@ -145,7 +150,7 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
     return () => {
       // Cleanup handled by React
     };
-  }, [isOpen, initialLatex]);
+  }, [isOpen, preparedInitial, initialRenderFormat]);
 
   const handleCodeChange = (newLatex) => {
     setEditorLatex(newLatex);
@@ -160,7 +165,9 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
 
   const handleInsert = () => {
     try {
-      onInsert(latex, renderFormat);
+      // Persist the normalized form so re-opening shows the same final state.
+      const finalLatex = prepareMathLatexForRender(latex);
+      onInsert(finalLatex, renderFormat);
     } catch (e) {
       console.error('Error inserting equation:', e);
     }
@@ -231,6 +238,18 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
   const applyBold = useCallback(() => insertStyled('\\mathbf'), [insertStyled]);
   const applyItalic = useCallback(() => insertStyled('\\mathit'), [insertStyled]);
   const applyBoldItalic = useCallback(() => insertStyled('\\mathbfit'), [insertStyled]);
+
+  const handleUpdateRender = useCallback(() => {
+    const mf = mathfieldRef.current;
+    const current = mf?.value || latex;
+    const prepared = prepareMathLatexForRender(current);
+    setLatex(prepared);
+    setEditorLatex(formatLatexForEditor(prepared));
+    if (mf) {
+      mf.value = prepared;
+      mf.focus();
+    }
+  }, [latex]);
 
   if (!isOpen) return null;
 
@@ -320,6 +339,15 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
                   styles={selectStyles}
                 />
               </div>
+            </div>
+            <div className={styles.toolbarGroup}>
+              <button
+                className={styles.updateRenderButton}
+                onClick={handleUpdateRender}
+                title="Apply render transforms (\frac → \cfrac, \int → \intop)"
+              >
+                Update Render
+              </button>
             </div>
           </div>
 

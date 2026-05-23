@@ -66,7 +66,11 @@ export { useCKEditorFonts } from './hooks/useCKEditorFonts.js';
 // Utilities
 export * from './utils/ckeditorUtils.js';
 export * from './utils/dropdownSearchUtils.js';
-export { replaceFracWithCfrac } from './utils/fracReplace.js';
+export {
+  prepareMathLatexForRender,
+  replaceFracWithCfrac,
+  replaceIntWithIntop
+} from './utils/fracReplace.js';
 export {
   applyMathLatexMarginStyles,
   extractMathMarginsFromElement,

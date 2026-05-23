@@ -1,5 +1,10 @@
 :root {
   --text-font-family: 'Kokila';
+  /* MathLive applies a persistent text-zone background to any text-mode atom
+     (including bodies of \raisebox, \mbox, \text). Disable that visual cue so
+     the persisted \raisebox{...} markup in \cfrac doesn't look highlighted. */
+  --highlight-text: transparent;
+  --text-highlight-background-color: transparent;
 }
 
 /* dont add to this one any other fonts */

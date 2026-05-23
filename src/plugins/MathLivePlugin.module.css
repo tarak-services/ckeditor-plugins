@@ -247,6 +247,25 @@
   background: #d0e8f9;
 }
 
+.updateRenderButton {
+  padding: 4px 12px;
+  height: 28px;
+  border: 1px solid #0066cc;
+  background: #e8f4fd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0066cc;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.updateRenderButton:hover {
+  background: #0066cc;
+  color: white;
+}
+
 .toolbarSelect {
   padding: 4px 8px;
   height: 28px;
