@@ -5,6 +5,31 @@
      the persisted \raisebox{...} markup in \cfrac doesn't look highlighted. */
   --highlight-text: transparent;
   --text-highlight-background-color: transparent;
+
+  /* Sub/superscript font scaling overrides (TeX defaults ~0.7 / ~0.5).
+     Unitless; multiplied into a percent at the rule site. */
+  --script-scale: 0.8;
+  /* Nested scripts (script-of-script) stay at parent size — em is multiplicative,
+     so 1 here means "don't shrink further", giving an effective 0.8 of base. */
+  --scriptscript-scale: 1;
+}
+
+/* MathLive sets `font-size: 70.71%` inline on any atom with scale != 1
+   (used for sub/sup content). Override it where it lands. */
+.ML__msubsup [style*="font-size"] {
+  font-size: calc(var(--script-scale) * 100%) !important;
+}
+.ML__msubsup .ML__msubsup [style*="font-size"] {
+  font-size: calc(var(--scriptscript-scale) * 100%) !important;
+}
+
+/* MathLive's editor content box clips both axes (overflow: hidden), which
+   crops oversized scripts when --script-scale is raised. Use clip-path with
+   negative top/bottom insets to clip horizontally only and let tall scripts
+   paint freely above/below. */
+.ML__content {
+  overflow: visible !important;
+  clip-path: inset(-100% 0 -100% 0);
 }
 
 /* dont add to this one any other fonts */

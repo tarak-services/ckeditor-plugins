@@ -115,7 +115,8 @@ img[alt^="QR Code:"] {
   max-width: 100%;
   display: inline-flex;
   vertical-align: baseline;
-  overflow: hidden;
+  overflow: visible;
+  clip-path: inset(-100% 0 -100% 0);
 }
 
 .math-formula-render {
