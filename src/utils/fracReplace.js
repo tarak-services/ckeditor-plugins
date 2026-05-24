@@ -5,9 +5,18 @@
  * \cfrac keeps fractions at full display size.
  *
  * Rules:
- *  - Numeric-only fractions: \frac{N}{D} → \cfrac{N}{\raisebox{0.5ex}{D}}
+ *  - Numeric-only fractions: \frac{N}{D}
+ *      → with useRaisebox=true:  \cfrac{N}{\raisebox{0.5ex}{D}}
+ *      → with useRaisebox=false: \cfrac{N}{D}
  *  - Other fractions: \frac{a}{b} → \cfrac{a}{b}
  *  - \cfrac, \dfrac are left untouched
+ *
+ * The `\raisebox{0.5ex}` lift on the denominator is a Kokila-font-specific
+ * baseline fix -- Kokila's digit glyphs sit lower in the em box than Latin
+ * math fonts, which leaves the denominator visibly low under the bar.
+ * Other fonts (Times New Roman, Mangal, etc.) don't need it. Callers pass
+ * `useRaisebox: isKokilaFontFamily(resolvedMathFontFamily)` to apply the
+ * fix only when the math is actually rendered in Kokila.
  */
 
 function findMatchingBrace(str, startIndex) {
@@ -56,7 +65,7 @@ function parseFracArgs(str, pos) {
   return { firstArg, secondArg, endPos: secondEnd };
 }
 
-export function replaceFracWithCfrac(latex) {
+export function replaceFracWithCfrac(latex, { useRaisebox = false } = {}) {
   let result = latex;
   let changed = true;
 
@@ -83,7 +92,7 @@ export function replaceFracWithCfrac(latex) {
       const isNumeric = /^\d+$/.test(firstArg) && /^\d+$/.test(secondArg);
 
       let replacement;
-      if (isNumeric) {
+      if (isNumeric && useRaisebox) {
         replacement = `\\cfrac{${firstArg}}{\\raisebox{0.5ex}{${secondArg}}}`;
       } else {
         replacement = `\\cfrac{${firstArg}}{${secondArg}}`;
@@ -99,6 +108,18 @@ export function replaceFracWithCfrac(latex) {
 }
 
 /**
+ * Returns true when the font-family string mentions Kokila (case-insensitive,
+ * matching even when it appears inside a longer fallback stack like
+ * `'UO_0_LatinDigits_abc123', 'Kokila', 'Times New Roman', KaTeX_Main`).
+ *
+ * Used to gate the `\raisebox` denominator lift in `replaceFracWithCfrac`,
+ * which is only needed for Kokila's lower-baseline digits.
+ */
+export function isKokilaFontFamily(family) {
+  return typeof family === 'string' && /\bkokila\b/i.test(family);
+}
+
+/**
  * Replace \int with \intop for better integral rendering in MathLive.
  *
  * \intop stacks limits above/below in display style and reads more clearly
@@ -110,7 +131,12 @@ export function replaceIntWithIntop(latex) {
   return latex.replace(/\\int(?![a-zA-Z])/g, '\\intop');
 }
 
-/** Apply MathLive render-time LaTeX normalizations. */
-export function prepareMathLatexForRender(latex) {
-  return replaceIntWithIntop(replaceFracWithCfrac(latex));
+/**
+ * Apply MathLive render-time LaTeX normalizations.
+ *
+ * `options.useRaisebox` is forwarded to `replaceFracWithCfrac` so callers can
+ * opt into the Kokila-specific denominator lift. Default is false.
+ */
+export function prepareMathLatexForRender(latex, options = {}) {
+  return replaceIntWithIntop(replaceFracWithCfrac(latex, options));
 }

@@ -6,7 +6,7 @@ import styles from './MathLivePlugin.module.css';
 import mathEditorCss from '../styles/MathLiveEditor.css?inline'; // Import CSS as string
 import LatexCodeEditor from '../components/LatexCodeEditor/LatexCodeEditor.jsx';
 import { formatLatexForEditor } from '../utils/latexFormatter.js';
-import { prepareMathLatexForRender } from '../utils/fracReplace.js';
+import { prepareMathLatexForRender, isKokilaFontFamily } from '../utils/fracReplace.js';
 import { applyMatrixSpacing, hasMatrix } from '../utils/matrixSpacing.js';
 
 // Suppress ResizeObserver errors (harmless warnings from MathLive keyboard)
@@ -51,12 +51,29 @@ const OPERATOR_RE = /\\(?:ln|log|sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|ex
 const decomposeOperators = (latex) =>
   latex.replace(OPERATOR_RE, (m) => m.slice(1));
 
-const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, onClose, availableFonts, getAvailableFonts }) => {
+const MathLiveDialog = ({
+  isOpen,
+  initialLatex,
+  initialRenderFormat,
+  onInsert,
+  onClose,
+  availableFonts,
+  getAvailableFonts,
+  mathFontFamily,
+  mathFontSize
+}) => {
+  // Raisebox lift on numeric \cfrac denominators is a Kokila-baseline fix
+  // only; for any other math font we keep the denominator unwrapped.
+  const prepareOptions = useMemo(
+    () => ({ useRaisebox: isKokilaFontFamily(mathFontFamily) }),
+    [mathFontFamily]
+  );
+
   // Normalize incoming LaTeX so the editor opens in the same shape it will render/persist as.
   // Only the very first creation can show the raw form (before user opens this dialog again).
   const preparedInitial = useMemo(
-    () => (initialLatex ? prepareMathLatexForRender(initialLatex) : ''),
-    [initialLatex]
+    () => (initialLatex ? prepareMathLatexForRender(initialLatex, prepareOptions) : ''),
+    [initialLatex, prepareOptions]
   );
   const [latex, setLatex] = useState(preparedInitial);
   const [editorLatex, setEditorLatex] = useState(preparedInitial ? formatLatexForEditor(preparedInitial) : '');
@@ -115,6 +132,19 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
       doublerulesep: { dimension: 2 }
     };
 
+    // Match the math font-family + size the host editor (and PDF) renders
+    // at. MathLive sizes the entire equation relative to the host's CSS
+    // font-size, so a single inline style on the <math-field> scales the
+    // whole render to the right pt value. The font-family stack is forwarded
+    // verbatim (it can include the per-doc LatinDigits/UO override font
+    // names whose @font-face rules sit in document.head).
+    if (mathFontFamily) {
+      element.style.fontFamily = mathFontFamily;
+    }
+    if (Number.isFinite(mathFontSize) && mathFontSize > 0) {
+      element.style.fontSize = `${mathFontSize}pt`;
+    }
+
     // Inject custom CSS into shadow DOM to override MathLive defaults
     const style = document.createElement('style');
     // Pick up --text-font-family from the nearest editor ancestor
@@ -149,7 +179,7 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
     }, 100);
 
     // Note: cleanup is handled by React when component unmounts
-  }, [preparedInitial]);
+  }, [preparedInitial, mathFontFamily, mathFontSize]);
 
   useEffect(() => {
     if (isOpen) {
@@ -180,7 +210,7 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
   const handleInsert = () => {
     try {
       // Persist the normalized form so re-opening shows the same final state.
-      const finalLatex = prepareMathLatexForRender(latex);
+      const finalLatex = prepareMathLatexForRender(latex, prepareOptions);
       onInsert(finalLatex, renderFormat);
     } catch (e) {
       console.error('Error inserting equation:', e);
@@ -258,14 +288,14 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
   const handleUpdateRender = useCallback(() => {
     const mf = mathfieldRef.current;
     const current = mf?.value || latex;
-    const prepared = prepareMathLatexForRender(current);
+    const prepared = prepareMathLatexForRender(current, prepareOptions);
     setLatex(prepared);
     setEditorLatex(formatLatexForEditor(prepared));
     if (mf) {
       mf.value = prepared;
       mf.focus();
     }
-  }, [latex]);
+  }, [latex, prepareOptions]);
 
   const applyMatrixSpacingChange = useCallback((colPt, rowPt) => {
     const mf = mathfieldRef.current;

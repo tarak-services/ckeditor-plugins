@@ -69,7 +69,8 @@ export * from './utils/dropdownSearchUtils.js';
 export {
   prepareMathLatexForRender,
   replaceFracWithCfrac,
-  replaceIntWithIntop
+  replaceIntWithIntop,
+  isKokilaFontFamily
 } from './utils/fracReplace.js';
 export {
   applyMathLatexMarginStyles,

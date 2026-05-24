@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import 'mathlive/static.css';  // Required for convertLatexToMarkup rendered output
 import MathLiveDialog from './MathLiveDialog.jsx';
 import MathLiveErrorBoundary from './MathLiveErrorBoundary.jsx';
-import { prepareMathLatexForRender } from '../utils/fracReplace';
+import { prepareMathLatexForRender, isKokilaFontFamily } from '../utils/fracReplace';
 import { applyMathLatexMarginStyles, extractMathMarginsFromView } from '../utils/mathMarginUtils';
 
 // We'll import MathLive functions dynamically to avoid interfering with initialization
@@ -280,6 +280,7 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
       };
 
       const existingFormat = selectedElement?.getAttribute('renderFormat') || mathRenderFormat;
+      const { mathFontFamily, mathFontSize } = this._resolveMathFont(editor);
 
       root.render(
         <MathLiveErrorBoundary>
@@ -291,9 +292,36 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
             onClose={handleClose}
             availableFonts={availableFonts}
             getAvailableFonts={getAvailableFonts}
+            mathFontFamily={mathFontFamily}
+            mathFontSize={mathFontSize}
           />
         </MathLiveErrorBoundary>
       );
+    }
+
+    /**
+     * Find the math font-family + size the host editor wants math to render
+     * at. Host apps (setmaker's MultiRootRichTextEditor) publish these as
+     * `data-math-font-family` and `data-math-font-size` on the wrapper
+     * around the editor. Falls back to Times New Roman 11pt to match the
+     * PDF's hard fallback when no host context is found.
+     */
+    _resolveMathFont(editor) {
+      const fallback = { mathFontFamily: `'Times New Roman', KaTeX_Main`, mathFontSize: 11 };
+      try {
+        const domRoot = editor.editing.view.getDomRoot();
+        if (!domRoot) return fallback;
+        const host = domRoot.closest('[data-math-font-family]');
+        if (!host) return fallback;
+        const ff = host.dataset.mathFontFamily || fallback.mathFontFamily;
+        const fs = parseFloat(host.dataset.mathFontSize);
+        return {
+          mathFontFamily: ff,
+          mathFontSize: Number.isFinite(fs) && fs > 0 ? fs : fallback.mathFontSize,
+        };
+      } catch (_) {
+        return fallback;
+      }
     }
 
     _insertMath(editor, latex, existingElement, format) {
@@ -321,7 +349,19 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
         return;
       }
 
-      const latexToRender = prepareMathLatexForRender(latex);
+      // Apply the Kokila-specific \raisebox lift on \cfrac denominators only
+      // when this math element actually renders in a Kokila font. We read the
+      // computed font-family of the math element so per-cell language fonts
+      // are respected (the same way the inline editor and the PDF do it).
+      let useRaisebox = false;
+      try {
+        const cs = element && element.ownerDocument && element.ownerDocument.defaultView
+          ? element.ownerDocument.defaultView.getComputedStyle(element)
+          : null;
+        if (cs) useRaisebox = isKokilaFontFamily(cs.fontFamily);
+      } catch (_) { /* ignore */ }
+
+      const latexToRender = prepareMathLatexForRender(latex, { useRaisebox });
       const useFormat = format || mathRenderFormat;
       const renderOptions = {
         letterShapeStyle: 'upright',
