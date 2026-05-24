@@ -7,6 +7,7 @@ import mathEditorCss from '../styles/MathLiveEditor.css?inline'; // Import CSS a
 import LatexCodeEditor from '../components/LatexCodeEditor/LatexCodeEditor.jsx';
 import { formatLatexForEditor } from '../utils/latexFormatter.js';
 import { prepareMathLatexForRender } from '../utils/fracReplace.js';
+import { applyMatrixSpacing, hasMatrix } from '../utils/matrixSpacing.js';
 
 // Suppress ResizeObserver errors (harmless warnings from MathLive keyboard)
 if (typeof window !== 'undefined') {
@@ -62,6 +63,8 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
   const [isMounted, setIsMounted] = useState(false);
   const [fontOptions, setFontOptions] = useState([]);
   const [renderFormat, setRenderFormat] = useState(initialRenderFormat || 'markup');
+  const [matrixColSpacing, setMatrixColSpacing] = useState(0);
+  const [matrixRowSpacing, setMatrixRowSpacing] = useState(0);
   const mathfieldRef = useRef(null);
   const savedSelectionRef = useRef(null);
 
@@ -96,11 +99,20 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
     // Set tighter spacing for compact math display
     // - medmuskip: space around binary operators (default 4mu) - affects \cdot, +, -, etc.
     // - thinmuskip: thin space amount (default 3mu) - affects \, spacing in mixed fractions
+    //
+    // NOTE: assigning to `element.registers` REPLACES the entire register set
+    // on the mathfield (unlike `convertLatexToMarkup`, which merges). So any
+    // defaults we still want — most notably `arraycolsep` for matrix column
+    // spacing — must be re-supplied here, otherwise matrices render with zero
+    // column gaps in the editor while looking fine in static renders.
     element.registers = {
       thinmuskip: '0mu',
       medmuskip: '0mu',
       thickmuskip: '0mu',
-      nulldelimiterspace: '0mu'
+      nulldelimiterspace: '0mu',
+      arraycolsep: { dimension: 5 },
+      arrayrulewidth: { dimension: 0.4 },
+      doublerulesep: { dimension: 2 }
     };
 
     // Inject custom CSS into shadow DOM to override MathLive defaults
@@ -144,6 +156,8 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
       setLatex(preparedInitial);
       setEditorLatex(preparedInitial ? formatLatexForEditor(preparedInitial) : '');
       setRenderFormat(initialRenderFormat || 'markup');
+      setMatrixColSpacing(0);
+      setMatrixRowSpacing(0);
       setIsMounted(false);
     }
 
@@ -239,6 +253,8 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
   const applyItalic = useCallback(() => insertStyled('\\mathit'), [insertStyled]);
   const applyBoldItalic = useCallback(() => insertStyled('\\mathbfit'), [insertStyled]);
 
+  const matrixPresent = useMemo(() => hasMatrix(latex), [latex]);
+
   const handleUpdateRender = useCallback(() => {
     const mf = mathfieldRef.current;
     const current = mf?.value || latex;
@@ -250,6 +266,36 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
       mf.focus();
     }
   }, [latex]);
+
+  const applyMatrixSpacingChange = useCallback((colPt, rowPt) => {
+    const mf = mathfieldRef.current;
+    const current = mf?.value || latex;
+    const next = applyMatrixSpacing(current, colPt, rowPt);
+    setLatex(next);
+    setEditorLatex(formatLatexForEditor(next));
+    if (mf) {
+      mf.value = next;
+      mf.focus();
+    }
+  }, [latex]);
+
+  const parseSpacingInput = (raw) => {
+    if (raw === '' || raw === '-' || raw === '+') return 0;
+    const n = parseFloat(raw);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const handleMatrixColChange = useCallback((e) => {
+    const v = parseSpacingInput(e.target.value);
+    setMatrixColSpacing(v);
+    applyMatrixSpacingChange(v, matrixRowSpacing);
+  }, [applyMatrixSpacingChange, matrixRowSpacing]);
+
+  const handleMatrixRowChange = useCallback((e) => {
+    const v = parseSpacingInput(e.target.value);
+    setMatrixRowSpacing(v);
+    applyMatrixSpacingChange(matrixColSpacing, v);
+  }, [applyMatrixSpacingChange, matrixColSpacing]);
 
   if (!isOpen) return null;
 
@@ -340,6 +386,34 @@ const MathLiveDialog = ({ isOpen, initialLatex, initialRenderFormat, onInsert, o
                 />
               </div>
             </div>
+            {matrixPresent && (
+              <>
+                <div className={styles.toolbarGroup}>
+                  <span className={styles.toolbarLabel}>Cols:</span>
+                  <input
+                    type="number"
+                    step="1"
+                    value={matrixColSpacing}
+                    onChange={handleMatrixColChange}
+                    className={styles.spacingInput}
+                    title="Extra horizontal space between matrix columns, in pt (negative allowed)"
+                  />
+                  <span className={styles.spacingUnit}>pt</span>
+                </div>
+                <div className={styles.toolbarGroup}>
+                  <span className={styles.toolbarLabel}>Rows:</span>
+                  <input
+                    type="number"
+                    step="1"
+                    value={matrixRowSpacing}
+                    onChange={handleMatrixRowChange}
+                    className={styles.spacingInput}
+                    title="Extra vertical space between matrix rows, in pt (negative allowed)"
+                  />
+                  <span className={styles.spacingUnit}>pt</span>
+                </div>
+              </>
+            )}
             <div className={styles.toolbarGroup}>
               <button
                 className={styles.updateRenderButton}

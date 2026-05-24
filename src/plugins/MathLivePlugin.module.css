@@ -287,3 +287,32 @@
   border-color: #0066cc;
   box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
 }
+
+.spacingInput {
+  width: 64px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #333;
+  text-align: right;
+  box-sizing: border-box;
+}
+
+.spacingInput:hover {
+  border-color: #0066cc;
+}
+
+.spacingInput:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+.spacingUnit {
+  font-size: 11px;
+  color: #888;
+  margin-left: -2px;
+}
