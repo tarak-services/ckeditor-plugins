@@ -82,6 +82,7 @@ const MathLiveDialog = ({
   const [renderFormat, setRenderFormat] = useState(initialRenderFormat || 'markup');
   const [matrixColSpacing, setMatrixColSpacing] = useState(0);
   const [matrixRowSpacing, setMatrixRowSpacing] = useState(0);
+  const [raiseValue, setRaiseValue] = useState('0.2');
   const mathfieldRef = useRef(null);
   const savedSelectionRef = useRef(null);
 
@@ -163,6 +164,19 @@ const MathLiveDialog = ({
     };
 
     element.addEventListener('input', handleInput);
+
+    // Continuously remember the last non-collapsed selection. Clicking into the
+    // "Raise" number input blurs the mathfield and collapses its live selection,
+    // so we need this saved range to know what to wrap on Apply.
+    const trackSelection = () => {
+      const range = element.selection?.ranges?.[0];
+      if (range && range[0] !== range[1]) {
+        savedSelectionRef.current = element.selection;
+      }
+    };
+    element.addEventListener('selection-change', trackSelection);
+    element.addEventListener('keyup', trackSelection);
+    element.addEventListener('pointerup', trackSelection);
 
     // Mark as mounted
     setIsMounted(true);
@@ -283,6 +297,39 @@ const MathLiveDialog = ({
   const applyItalic = useCallback(() => insertStyled('\\mathit'), [insertStyled]);
   const applyBoldItalic = useCallback(() => insertStyled('\\mathbfit'), [insertStyled]);
 
+  const applyRaisebox = useCallback((rawVal) => {
+    const mf = mathfieldRef.current;
+    if (!mf) return;
+    // Accept a bare number ("0.2", "-0.5") or a value with a unit ("0.2em").
+    const trimmed = String(rawVal ?? '').trim();
+    if (!trimmed || trimmed === '-' || trimmed === '+') return;
+    const val = /[a-z%]$/i.test(trimmed) ? trimmed : `${trimmed}ex`;
+
+    // Prefer the live selection; if the user typed in the number input the
+    // mathfield lost focus and collapsed its selection, so fall back to the
+    // last non-collapsed selection we tracked.
+    let sel = mf.selection;
+    let range = sel?.ranges?.[0];
+    if (!(range && range[0] !== range[1])) {
+      sel = savedSelectionRef.current;
+      range = sel?.ranges?.[0];
+    }
+    if (!(range && range[0] !== range[1])) {
+      mf.focus();
+      return;
+    }
+
+    mf.focus();
+    mf.selection = sel;
+    // `#@` wraps the current selection. We use the TeX primitive math-mode command
+    // `\raise <val> {#@}` which keeps its argument in math mode natively, ensuring
+    // subscripts, superscripts, and other math formatting (e.g. E_g) render perfectly
+    // without the parser bugs of text-mode `\raisebox`!
+    mf.insert(`\\raise ${val} {#@}`, { selectionMode: 'item' });
+    setLatex(mf.value || '');
+    savedSelectionRef.current = null;
+  }, []);
+
   const matrixPresent = useMemo(() => hasMatrix(latex), [latex]);
 
   const handleUpdateRender = useCallback(() => {
@@ -400,6 +447,31 @@ const MathLiveDialog = ({
                 title="Bold Italic"
               >
                 <strong><em>BI</em></strong>
+              </button>
+            </div>
+            <div className={styles.toolbarGroup}>
+              <span className={styles.toolbarLabel}>Raise:</span>
+              <input
+                type="number"
+                step="0.1"
+                value={raiseValue}
+                onChange={(e) => setRaiseValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applyRaisebox(raiseValue);
+                  }
+                }}
+                className={styles.raiseInput}
+                title="Vertical shift in ex (positive = up, negative = down)"
+              />
+              <span className={styles.raiseUnit}>ex</span>
+              <button
+                className={styles.applyButton}
+                onMouseDown={(e) => { e.preventDefault(); applyRaisebox(raiseValue); }}
+                title="Raise/lower the selected text by this amount"
+              >
+                Apply
               </button>
             </div>
             <div className={styles.toolbarGroup}>

@@ -247,6 +247,78 @@
   background: #d0e8f9;
 }
 
+.raiseInput {
+  box-sizing: border-box;
+  width: 52px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #333;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.raiseInput:hover {
+  border-color: #0066cc;
+}
+
+.raiseInput:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+}
+
+/* Hide standard spin buttons for cleaner layout, arrow keys still work */
+.raiseInput::-webkit-outer-spin-button,
+.raiseInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.raiseInput {
+  -moz-appearance: textfield;
+}
+
+.raiseUnit {
+  font-size: 11px;
+  color: #888;
+  margin-left: -2px;
+  margin-right: 4px;
+  font-weight: 500;
+  text-transform: lowercase;
+}
+
+.applyButton {
+  box-sizing: border-box;
+  padding: 4px 12px;
+  height: 28px;
+  border: 1px solid #0066cc;
+  background: #e8f4fd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0066cc;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.applyButton:hover {
+  background: #0066cc;
+  color: white;
+}
+
+.applyButton:active {
+  background: #0052a3;
+  border-color: #0052a3;
+}
+
 .updateRenderButton {
   padding: 4px 12px;
   height: 28px;
