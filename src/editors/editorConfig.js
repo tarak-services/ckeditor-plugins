@@ -107,6 +107,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     ...(customPlugins.CurlyQuotesPlugin ? [customPlugins.CurlyQuotesPlugin] : []),
     ...(customPlugins.EnglishTextPlugin ? [customPlugins.EnglishTextPlugin] : []),
     ...(customPlugins.FontDropdownLabelsPlugin ? [customPlugins.FontDropdownLabelsPlugin] : []),
+    ...(customPlugins.FontFamilyEnglishLabelPlugin ? [customPlugins.FontFamilyEnglishLabelPlugin] : []),
     ...(customPlugins.MarginBottomPlugin ? [customPlugins.MarginBottomPlugin] : []),
     ...(customPlugins.MarginTopPlugin ? [customPlugins.MarginTopPlugin] : []),
     ...(customPlugins.KeyboardShortcutsPlugin ? [customPlugins.KeyboardShortcutsPlugin] : [])

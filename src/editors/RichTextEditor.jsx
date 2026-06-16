@@ -24,6 +24,7 @@ import createSoftBreakVisibilityPlugin from '../plugins/SoftBreakVisibilityPlugi
 import createSupSubLineHeightPlugin from '../plugins/SupSubLineHeightPlugin.js';
 import createCurlyQuotesPlugin from '../plugins/CurlyQuotesPlugin.js';
 import createFontDropdownLabelsPlugin from '../plugins/FontDropdownLabelsPlugin.js';
+import createFontFamilyEnglishLabelPlugin from '../plugins/FontFamilyEnglishLabelPlugin.js';
 import createMarginBottomPlugin from '../plugins/MarginBottomPlugin.js';
 import createMarginTopPlugin from '../plugins/MarginTopPlugin.js';
 
@@ -140,6 +141,7 @@ const RichTextEditor = ({
     SupSubLineHeightPlugin: createSupSubLineHeightPlugin(CKEditorCombined),
     CurlyQuotesPlugin: createCurlyQuotesPlugin(CKEditorCombined),
     FontDropdownLabelsPlugin: createFontDropdownLabelsPlugin(CKEditorCombined),
+    FontFamilyEnglishLabelPlugin: createFontFamilyEnglishLabelPlugin(CKEditorCombined),
     MarginBottomPlugin: createMarginBottomPlugin(CKEditorCombined),
     MarginTopPlugin: createMarginTopPlugin(CKEditorCombined)
   };

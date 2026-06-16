@@ -5,6 +5,7 @@ import createCurlyQuotesPlugin from './plugins/CurlyQuotesPlugin.js';
 import createEnglishTextPlugin from './plugins/EnglishTextPlugin.js';
 import createCustomTableColumnResizePlugin from './plugins/CustomTableColumnResizePlugin.js';
 import createFontDropdownLabelsPlugin from './plugins/FontDropdownLabelsPlugin.js';
+import createFontFamilyEnglishLabelPlugin from './plugins/FontFamilyEnglishLabelPlugin.js';
 import createFontFamilySearchPlugin from './plugins/FontFamilySearchPlugin.js';
 import createFontSizeSearchPlugin from './plugins/FontSizeSearchPlugin.js';
 import createFontSymbolSelectorPlugin from './plugins/FontSymbolSelectorPlugin.jsx';
@@ -34,6 +35,7 @@ export {
   createEnglishTextPlugin,
   createCustomTableColumnResizePlugin,
   createFontDropdownLabelsPlugin,
+  createFontFamilyEnglishLabelPlugin,
   createFontFamilySearchPlugin,
   createFontSizeSearchPlugin,
   createFontSymbolSelectorPlugin,
@@ -95,6 +97,7 @@ export function createAllPlugins(CKEditor, options = {}) {
     EnglishTextPlugin: createEnglishTextPlugin(CKEditor),
     CustomTableColumnResizePlugin: createCustomTableColumnResizePlugin(CKEditor),
     FontDropdownLabelsPlugin: createFontDropdownLabelsPlugin(CKEditor),
+    FontFamilyEnglishLabelPlugin: createFontFamilyEnglishLabelPlugin(CKEditor),
     FontFamilySearchPlugin: createFontFamilySearchPlugin(CKEditor),
     FontSizeSearchPlugin: createFontSizeSearchPlugin(CKEditor),
     FontSymbolSelectorPlugin: createFontSymbolSelectorPlugin(CKEditor, { getAvailableFonts, getFontSupportedGlyphs }),
