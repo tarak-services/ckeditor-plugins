@@ -133,10 +133,9 @@ img[alt^="QR Code:"] {
    Typography
    ========================================================================== */
 
-p {
+p, td, th {
   margin: 0;
   padding: 0;
-  text-align: justify;
 }
 
 td, th {
