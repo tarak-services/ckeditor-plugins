@@ -252,13 +252,13 @@
 .ck.ck-editor__editable_inline[dir=ltr] p:not(.text-align-left):not(.text-align-center):not(.text-align-right):not(.text-align-justify),
 .ck.ck-editor__editable_inline[dir=ltr] td:not(.text-align-left):not(.text-align-center):not(.text-align-right):not(.text-align-justify),
 .ck.ck-editor__editable_inline[dir=ltr] th:not(.text-align-left):not(.text-align-center):not(.text-align-right):not(.text-align-justify) {
-  text-align: var(--default-text-alignment, justify);
+  text-align: var(--default-text-alignment, left);
 }
 
 .ck.ck-editor__editable_inline[dir=rtl] p:not(.text-align-left):not(.text-align-center):not(.text-align-right):not(.text-align-justify),
 .ck.ck-editor__editable_inline[dir=rtl] td:not(.text-align-left):not(.text-align-center):not(.text-align-right):not(.text-align-justify),
 .ck.ck-editor__editable_inline[dir=rtl] th:not(.text-align-left):not(.text-align-center):not(.text-align-right):not(.text-align-justify) {
-  text-align: var(--default-text-alignment, justify);
+  text-align: var(--default-text-alignment, right);
 }
 
 /* Focus state */
