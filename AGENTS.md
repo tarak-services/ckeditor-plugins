@@ -36,3 +36,7 @@ Each plugin is a factory `createXxxPlugin(CKEditor, options?)` that destructures
 - Both consumers set Vite `resolve.dedupe` for `ckeditor5`, `mathlive`, `react`, etc. — required to avoid the `ckeditor-duplicated-modules` runtime error. Keep new deps deduped there too.
 
 Production builds clone this repo in CI and `COPY` it into consumer Docker images.
+
+## Tools
+
+Use `gh-axi` for GitHub and `chrome-devtools-axi` for browser automation.
