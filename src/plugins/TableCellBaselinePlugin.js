@@ -113,9 +113,21 @@ export default function createTableCellBaselinePlugin(CKEditor) {
     }
 
     /**
-     * Extend the built-in tableCellVerticalAlignment command to handle 'baseline' as a valid value
-     * This ensures that when switching from 'baseline' to 'top', 'middle', or 'bottom',
-     * the command properly updates the model
+     * Extend the built-in tableCellVerticalAlignment command so that an
+     * explicitly chosen alignment is ALWAYS serialized to the output HTML —
+     * including 'middle', and including the 'baseline' -> other transitions.
+     *
+     * Why this is needed: CKEditor's built-in command drops any value that
+     * equals the cell's internal default (see `_getValueToSet` -> removeAttribute
+     * when value === defaultValue). For LAYOUT tables the hardcoded vertical
+     * default is 'middle', so choosing "Align cell text to the middle" removes
+     * the model attribute and NO `vertical-align` style is emitted in the data.
+     * Downstream label styling then applies `table.layout-table td { vertical-align: top }`
+     * (in both content-output.css for the preview and the print CSS for the PDF),
+     * so a middle cell renders top-aligned. By writing the attribute directly we
+     * force the downcast converter to emit `vertical-align: middle` as an inline
+     * style, which overrides that class rule consistently in the editor, the
+     * on-screen preview, and the exported PDF.
      */
     _extendVerticalAlignmentCommand() {
       const editor = this.editor;
@@ -128,36 +140,26 @@ export default function createTableCellBaselinePlugin(CKEditor) {
       // Store the original execute method
       const originalExecute = verticalAlignmentCommand.execute.bind(verticalAlignmentCommand);
 
-      // Override execute to handle baseline -> other value transitions
       verticalAlignmentCommand.execute = function(options = {}) {
         const model = editor.model;
         const tableUtils = editor.plugins.get('TableUtils');
         const selection = model.document.selection;
         const selectedCells = tableUtils ? tableUtils.getSelectionAffectedTableCells(selection) : [];
 
-        // If we're setting a new value and some cells have 'baseline',
-        // we need to handle the transition ourselves
+        // Any explicit alignment ('top' | 'middle' | 'bottom' | 'baseline') is
+        // written to every selected cell so it is never stripped as a default.
+        // This also subsumes the previous 'baseline' -> value transition fix.
         if (options.value && selectedCells.length > 0) {
-          const cellsWithBaseline = selectedCells.filter(cell =>
-            cell.getAttribute('tableCellVerticalAlignment') === 'baseline'
-          );
-
-          if (cellsWithBaseline.length > 0) {
-            model.change(writer => {
-              for (const cell of cellsWithBaseline) {
-                // Set the new value directly
-                writer.setAttribute('tableCellVerticalAlignment', options.value, cell);
-              }
-            });
-
-            // If all cells had baseline, we're done
-            if (cellsWithBaseline.length === selectedCells.length) {
-              return;
+          model.change(writer => {
+            for (const cell of selectedCells) {
+              writer.setAttribute('tableCellVerticalAlignment', options.value, cell);
             }
-          }
+          });
+          return;
         }
 
-        // Call original for non-baseline cells or when no value specified
+        // No explicit value (reset/clear) — defer to the original behavior,
+        // which removes the attribute.
         originalExecute(options);
       };
     }
