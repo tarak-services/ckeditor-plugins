@@ -283,12 +283,26 @@
 
 /* Clip overly-long math equations inside the editor to the column width,
    like images/tables. Overflow goes on the OUTER wrapper (.math-formula-widget). */
-.ck.ck-editor__editable .math-formula-widget {
+.ck.ck-editor__editable .math-formula-widget,
+.ck.ck-editor__editable .math-tex {
   max-width: 100%;
   display: inline-flex;
   vertical-align: baseline;
   overflow: visible;
   clip-path: inset(-100% 0 -100% 0);
+  /* Wrapper inherits paragraph size — never a fixed pt that ignores the editor font. */
+  font-size: 1em;
+  /* Breathing room vs adjacent words (avoids visual "Yon" / "Ywhen" glue). */
+  padding-inline: 0.12em;
+}
+
+/* Optical scale: MathLive/KaTeX glyphs at 1em read smaller than body text.
+   Boost only the inner latex node so nested em does not compound. */
+.ck.ck-editor__editable .math-formula-widget .ML__latex,
+.ck.ck-editor__editable .math-formula-widget .ML__mathlive,
+.ck.ck-editor__editable .math-tex .ML__latex,
+.ck.ck-editor__editable .math-tex .ML__mathlive {
+  font-size: 1.28em;
 }
 
 .ck.ck-editor__editable .math-formula-render {
@@ -299,6 +313,7 @@
   display: inline-block;
   vertical-align: baseline;
   max-width: 100%;
+  font-size: 1em;
 }
 
 /* Allow flex children to shrink below their math content's intrinsic width */
@@ -512,4 +527,18 @@
   /* Ensure no double scrollbars */
   margin-bottom: 16px;
   border: 1px solid #d9d9d9 !important;
+}
+
+/* Visibly highlight bad MathML */
+.katex-mathml {
+  color: red !important;
+  background-color: pink !important;
+  border: 1px dashed red !important;
+  display: inline-block !important;
+  clip: auto !important;
+  clip-path: none !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
 }

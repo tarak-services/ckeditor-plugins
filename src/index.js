@@ -26,6 +26,7 @@ import createTableColumnResizeOverridePlugin from './plugins/TableColumnResizeOv
 import createTextAlignLastPlugin from './plugins/TextAlignLastPlugin.js';
 import createTextDirectionPlugin from './plugins/TextDirectionPlugin.jsx';
 import createUnderlineOffsetPlugin from './plugins/UnderlineOffsetPlugin.js';
+import createMathMLSupportPlugin from './plugins/MathMLSupportPlugin.js';
 
 // Re-export all plugins
 export {
@@ -55,7 +56,8 @@ export {
   createTableColumnResizeOverridePlugin,
   createTextAlignLastPlugin,
   createTextDirectionPlugin,
-  createUnderlineOffsetPlugin
+  createUnderlineOffsetPlugin,
+  createMathMLSupportPlugin
 };
 
 // Editor components
@@ -117,5 +119,6 @@ export function createAllPlugins(CKEditor, options = {}) {
     TextAlignLastPlugin: createTextAlignLastPlugin(CKEditor),
     TextDirectionPlugin: createTextDirectionPlugin(CKEditor),
     UnderlineOffsetPlugin: createUnderlineOffsetPlugin(CKEditor),
+    MathMLSupportPlugin: createMathMLSupportPlugin(CKEditor),
   };
 }

@@ -110,7 +110,8 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     ...(customPlugins.FontFamilyEnglishLabelPlugin ? [customPlugins.FontFamilyEnglishLabelPlugin] : []),
     ...(customPlugins.MarginBottomPlugin ? [customPlugins.MarginBottomPlugin] : []),
     ...(customPlugins.MarginTopPlugin ? [customPlugins.MarginTopPlugin] : []),
-    ...(customPlugins.KeyboardShortcutsPlugin ? [customPlugins.KeyboardShortcutsPlugin] : [])
+    ...(customPlugins.KeyboardShortcutsPlugin ? [customPlugins.KeyboardShortcutsPlugin] : []),
+    ...(customPlugins.MathMLSupportPlugin ? [customPlugins.MathMLSupportPlugin] : [])
   ];
 
   // Shared default configuration
@@ -202,6 +203,18 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
       allow: [
         {
           name: /.*/,
+          attributes: true,
+          classes: true,
+          styles: true
+        },
+        {
+          name: 'math',
+          attributes: true,
+          classes: true,
+          styles: true
+        },
+        {
+          name: /^(semantics|mrow|mi|mo|mn|annotation)$/,
           attributes: true,
           classes: true,
           styles: true
