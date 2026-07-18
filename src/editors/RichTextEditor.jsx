@@ -38,7 +38,7 @@ import '../styles/RichTextEditor.css';
 const SLIM_TOOLBAR = {
   items: [
     'bold', 'italic', 'underlineOffset', 'strikethrough', '|',
-    'superscript', 'subscript', '|',
+    'superscript', 'subscript', 'highlight', '|',
     'bulletedList', 'numberedList', '|',
     'MathLive', '|',
     'sourceEditing'

@@ -182,6 +182,36 @@ figure.table {
 /* Font family and size are applied via inline styles by CKEditor */
 
 /* ==========================================================================
+   Highlight (marker / pen) — <mark class="marker-*|pen-*">
+   ========================================================================== */
+
+.marker-yellow {
+  background-color: hsl(60, 97%, 73%);
+}
+
+.marker-green {
+  background-color: hsl(120, 93%, 68%);
+}
+
+.marker-pink {
+  background-color: hsl(345, 96%, 73%);
+}
+
+.marker-blue {
+  background-color: hsl(201, 97%, 72%);
+}
+
+.pen-red {
+  color: hsl(0, 85%, 49%);
+  background-color: transparent;
+}
+
+.pen-green {
+  color: hsl(112, 100%, 27%);
+  background-color: transparent;
+}
+
+/* ==========================================================================
    List Styles
    ========================================================================== */
 

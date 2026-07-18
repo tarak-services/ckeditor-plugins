@@ -26,6 +26,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     Heading,
     Alignment,
     RemoveFormat,
+    Highlight,
     Widget,
     Mention,
     Table,
@@ -65,6 +66,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     Heading,
     Alignment,
     RemoveFormat,
+    Highlight,
     Widget,
     Mention,
     PlainTableOutput, // MUST come before Table to remove figure wrapper
@@ -128,7 +130,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     toolbar: {
       items: [
         'fontFamily', 'fontSize', 'lineHeight', '|',
-        'bold', 'italic', 'underlineOffset', 'strikethrough', 'superscript', 'subscript', 'supSubLineHeight', '|',
+        'bold', 'italic', 'underlineOffset', 'strikethrough', 'superscript', 'subscript', 'supSubLineHeight', 'highlight', '|',
         'alignment', 'textAlignLast', 'textDirectionLTR', 'textDirectionRTL', '|',
         'bulletedList', 'numberedList', '|',
         'insertTableLayout', 'tableStyles', '|',
