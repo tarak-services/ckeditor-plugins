@@ -408,7 +408,7 @@
    Mention/Variable Styles (for @ mentions in editor)
    ========================================================================== */
 
-/* Variable mention styling */
+/* Variable mention styling — always blue chips; bold when nested in <strong>/<b> */
 .ck-content .mention,
 .ck-content span[data-mention] {
   background-color: #e6f4ff;
@@ -416,12 +416,22 @@
   padding: 1px 4px;
   border-radius: 3px;
   cursor: pointer;
+  font-weight: normal;
   /* Allow text wrapping */
   word-wrap: break-word;
   overflow-wrap: break-word;
   word-break: break-word;
   white-space: normal;
   display: inline;
+}
+
+.ck-content strong .mention,
+.ck-content strong span[data-mention],
+.ck-content b .mention,
+.ck-content b span[data-mention] {
+  font-weight: bold;
+  color: #1677ff;
+  background-color: #e6f4ff;
 }
 
 .ck-content .mention:hover,
