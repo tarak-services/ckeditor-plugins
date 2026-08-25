@@ -112,28 +112,26 @@
   src: url('/math-fonts/KaTeX_UprightInt_Size2.woff2?v=2') format('woff2');
 }
 
-html[data-upright-integrals] .ML__op-symbol.ML__small-op,
+/* Keep html[...] and :host-context on SEPARATE rules. Comma-combining them
+   drops the whole block in a document stylesheet: :host-context is invalid
+   outside shadow DOM, and a single invalid selector invalidates the list.
+   CKEditor widgets live in the page (html[...]); the MathLive dialog injects
+   this file into math-field's shadow root (:host-context). */
+html[data-upright-integrals] .ML__op-symbol.ML__small-op {
+  font-family: KaTeX_UprightInt_Size1, KaTeX_Size1 !important;
+}
 :host-context(html[data-upright-integrals]) .ML__op-symbol.ML__small-op {
   font-family: KaTeX_UprightInt_Size1, KaTeX_Size1 !important;
 }
 
-html[data-upright-integrals] .ML__op-symbol.ML__large-op,
+html[data-upright-integrals] .ML__op-symbol.ML__large-op {
+  font-family: KaTeX_UprightInt_Size2, KaTeX_Size2 !important;
+}
 :host-context(html[data-upright-integrals]) .ML__op-symbol.ML__large-op {
   font-family: KaTeX_UprightInt_Size2, KaTeX_Size2 !important;
 }
 
-/* MathLive still positions integral limits with Computer Modern italic
-   correction (tuck the subscript left, pad the nucleus right). That is
-   wrong once the sign is upright — zero those inline offsets. Only
-   integrals get these inline margins; \sum/\prod are untouched. */
-html[data-upright-integrals] .ML__op-group .ML__center[style*="margin-left"],
-:host-context(html[data-upright-integrals]) .ML__op-group .ML__center[style*="margin-left"] {
-  margin-left: 0 !important;
-}
-
-html[data-upright-integrals] .ML__op-symbol.ML__small-op[style*="margin-right"],
-html[data-upright-integrals] .ML__op-symbol.ML__large-op[style*="margin-right"],
-:host-context(html[data-upright-integrals]) .ML__op-symbol.ML__small-op[style*="margin-right"],
-:host-context(html[data-upright-integrals]) .ML__op-symbol.ML__large-op[style*="margin-right"] {
-  margin-right: 0 !important;
-}
+/* MathLive's inline italic-correction margins (limit tucked left, nucleus
+   padded right) are deliberately left alone. The sign is centered inside
+   .ML__center, so zeroing them re-centers the glyph and drifts it right of
+   where the slanted ∫ rendered. The flag swaps the face, nothing else. */
