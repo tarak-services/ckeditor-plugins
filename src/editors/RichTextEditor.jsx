@@ -15,6 +15,7 @@ import createTextAlignLastPlugin from '../plugins/TextAlignLastPlugin.js';
 import createImageDPIScalePlugin from '../plugins/ImageDPIScalePlugin.js';
 import createImageVerticalAlignPlugin from '../plugins/ImageVerticalAlignPlugin.js';
 import createTableCellBaselinePlugin from '../plugins/TableCellBaselinePlugin.js';
+import createTableCellBorderPlugin from '../plugins/TableCellBorderPlugin.js';
 import createFontSymbolSelectorPlugin from '../plugins/FontSymbolSelectorPlugin.jsx';
 import createUnderlineOffsetPlugin from '../plugins/UnderlineOffsetPlugin.js';
 import createTableColumnResizeOverridePlugin from '../plugins/TableColumnResizeOverridePlugin.js';
@@ -132,6 +133,7 @@ const RichTextEditor = ({
     ImageDPIScalePlugin: createImageDPIScalePlugin(CKEditorCombined),
     ImageVerticalAlignPlugin: createImageVerticalAlignPlugin(CKEditorCombined),
     TableCellBaselinePlugin: createTableCellBaselinePlugin(CKEditorCombined),
+    TableCellBorderPlugin: createTableCellBorderPlugin(CKEditorCombined),
     FontSymbolSelectorPlugin: createFontSymbolSelectorPlugin(CKEditorCombined, { getAvailableFonts, getFontSupportedGlyphs }),
     UnderlineOffsetPlugin: createUnderlineOffsetPlugin(CKEditorCombined),
     TableColumnResizeOverridePlugin: createTableColumnResizeOverridePlugin(CKEditorCombined),

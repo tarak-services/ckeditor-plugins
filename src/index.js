@@ -22,6 +22,7 @@ import createSoftBreakVisibilityPlugin from './plugins/SoftBreakVisibilityPlugin
 import createSupSubLineHeightPlugin from './plugins/SupSubLineHeightPlugin.js';
 import createTableBorderPlugin from './plugins/TableBorderPlugin.jsx';
 import createTableCellBaselinePlugin from './plugins/TableCellBaselinePlugin.js';
+import createTableCellBorderPlugin from './plugins/TableCellBorderPlugin.js';
 import createTableColumnResizeOverridePlugin from './plugins/TableColumnResizeOverridePlugin.js';
 import createTextAlignLastPlugin from './plugins/TextAlignLastPlugin.js';
 import createTextDirectionPlugin from './plugins/TextDirectionPlugin.jsx';
@@ -53,6 +54,7 @@ export {
   createSupSubLineHeightPlugin,
   createTableBorderPlugin,
   createTableCellBaselinePlugin,
+  createTableCellBorderPlugin,
   createTableColumnResizeOverridePlugin,
   createTextAlignLastPlugin,
   createTextDirectionPlugin,
@@ -115,6 +117,7 @@ export function createAllPlugins(CKEditor, options = {}) {
     SupSubLineHeightPlugin: createSupSubLineHeightPlugin(CKEditor),
     TableBorderPlugin: createTableBorderPlugin(CKEditor),
     TableCellBaselinePlugin: createTableCellBaselinePlugin(CKEditor),
+    TableCellBorderPlugin: createTableCellBorderPlugin(CKEditor),
     TableColumnResizeOverridePlugin: createTableColumnResizeOverridePlugin(CKEditor),
     TextAlignLastPlugin: createTextAlignLastPlugin(CKEditor),
     TextDirectionPlugin: createTextDirectionPlugin(CKEditor),

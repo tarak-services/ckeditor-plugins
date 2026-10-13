@@ -1,0 +1,49 @@
+.ck.ck-cell-borders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ck-spacing-small);
+  padding: var(--ck-spacing-standard);
+  width: 210px;
+  outline: none;
+}
+
+.ck.ck-cell-borders__positions {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+}
+
+.ck.ck-cell-borders__label {
+  margin-top: var(--ck-spacing-small);
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--ck-color-text);
+  opacity: 0.7;
+}
+
+.ck.ck-cell-borders__styles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+}
+
+.ck.ck-cell-borders__styles .ck.ck-button {
+  justify-content: center;
+}
+
+.ck.ck-cell-borders__styles .ck.ck-button .ck.ck-icon {
+  width: 48px;
+  height: 12px;
+}
+
+/* Editing view only. CKEditor renders layout tables with separated borders and,
+   once a cell has any inline border, its unset sides fall back to the
+   nested-editable border (black via RichTextEditor.css). Match the output CSS
+   instead: collapsed borders, unset sides have no border. */
+.ck-editor__editable .table.layout-table > table:has(> tbody > tr > td[style*="border"]) {
+  border-collapse: collapse;
+}
+
+.ck-editor__editable .table.layout-table > table > tbody > tr > td[style*="border"] {
+  border-style: none;
+}

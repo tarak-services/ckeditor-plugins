@@ -18,7 +18,7 @@ Consumers need `VITE_CKEDITOR_LICENSE_KEY` in their `.env`. CKEditor comes from 
 ## Layout
 
 - `src/index.js` — main entry: re-exports plugins, `createAllPlugins(CKEditor, options)`, `createEditorConfig(CKEditor, customPlugins, mentionFeeds?, licenseKey?)`, `RichTextEditor`, hooks, utils
-- `src/plugins/` — 27 plugin factories. Notable: `MathLivePlugin.jsx` (LaTeX via mathlive), `BarcodePlugin.jsx` (jsbarcode), `QRCodePlugin.jsx`, `FontSymbolSelectorPlugin.jsx`, table plugins, margin/alignment plugins
+- `src/plugins/` — 29 plugin factories. Notable: `MathLivePlugin.jsx` (LaTeX via mathlive), `BarcodePlugin.jsx` (jsbarcode), `QRCodePlugin.jsx`, `FontSymbolSelectorPlugin.jsx`, table plugins (`TableCellBorderPlugin.js` = Excel-style per-side borders on selected cells, stored in the built-in `tableCellBorder*` attributes), margin/alignment plugins
 - `src/editors/RichTextEditor.jsx` — drop-in React editor (bundles most plugins; no Barcode)
 - `src/editors/editorConfig.js` — shared plugin list, toolbar, htmlSupport config
 - `src/styles/` — `RichTextEditor.css`, `MathLiveEditor.css`, `content-output.css` (preview/PDF output); consumers import these explicitly
