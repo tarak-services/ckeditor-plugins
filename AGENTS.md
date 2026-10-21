@@ -39,7 +39,7 @@ Production builds clone this repo in CI and `COPY` it into consumer Docker image
 
 ## Production access
 
-Agents never SSH, touch prod, push deploy branches, or trigger consumer deploy workflows. Commit locally and give the user the push command. See `../.cursor/rules/no-prod-access.mdc`.
+Agents never SSH, touch prod, or trigger consumer deploy workflows. They may `git push` when the user asks (never force-push). See `../.cursor/rules/no-prod-access.mdc`.
 
 ## Tools
 
