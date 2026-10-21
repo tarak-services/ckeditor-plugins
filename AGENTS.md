@@ -37,6 +37,10 @@ Each plugin is a factory `createXxxPlugin(CKEditor, options?)` that destructures
 
 Production builds clone this repo in CI and `COPY` it into consumer Docker images.
 
+## Production access
+
+Agents never SSH, touch prod, push deploy branches, or trigger consumer deploy workflows. Commit locally and give the user the push command. See `../.cursor/rules/no-prod-access.mdc`.
+
 ## Tools
 
 Use `gh-axi` for GitHub and `chrome-devtools-axi` for browser automation.
