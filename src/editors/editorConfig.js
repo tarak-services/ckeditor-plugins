@@ -114,7 +114,8 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
     ...(customPlugins.MarginBottomPlugin ? [customPlugins.MarginBottomPlugin] : []),
     ...(customPlugins.MarginTopPlugin ? [customPlugins.MarginTopPlugin] : []),
     ...(customPlugins.KeyboardShortcutsPlugin ? [customPlugins.KeyboardShortcutsPlugin] : []),
-    ...(customPlugins.MathMLSupportPlugin ? [customPlugins.MathMLSupportPlugin] : [])
+    ...(customPlugins.MathMLSupportPlugin ? [customPlugins.MathMLSupportPlugin] : []),
+    ...(customPlugins.RemoveNbspPlugin ? [customPlugins.RemoveNbspPlugin] : [])
   ];
 
   // Shared default configuration
@@ -139,7 +140,7 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
         'imageUpload', 'insertQRCode', '|',
         'sourceEditing', '|',
         'marginTop', 'marginBottom', '|',
-        'removeFormat'
+        'removeFormat', 'removeNbsp'
       ],
       shouldNotGroupWhenFull: true
     },

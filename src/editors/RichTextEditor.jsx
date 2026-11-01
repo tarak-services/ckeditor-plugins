@@ -28,6 +28,7 @@ import createFontDropdownLabelsPlugin from '../plugins/FontDropdownLabelsPlugin.
 import createFontFamilyEnglishLabelPlugin from '../plugins/FontFamilyEnglishLabelPlugin.js';
 import createMarginBottomPlugin from '../plugins/MarginBottomPlugin.js';
 import createMarginTopPlugin from '../plugins/MarginTopPlugin.js';
+import createRemoveNbspPlugin from '../plugins/RemoveNbspPlugin.js';
 
 import { useCKEditorFonts } from '../hooks/useCKEditorFonts.js';
 import { buildEditorStyles, buildEditorConfig as buildUtilConfig } from '../utils/ckeditorUtils.js';
@@ -145,7 +146,8 @@ const RichTextEditor = ({
     FontDropdownLabelsPlugin: createFontDropdownLabelsPlugin(CKEditorCombined),
     FontFamilyEnglishLabelPlugin: createFontFamilyEnglishLabelPlugin(CKEditorCombined),
     MarginBottomPlugin: createMarginBottomPlugin(CKEditorCombined),
-    MarginTopPlugin: createMarginTopPlugin(CKEditorCombined)
+    MarginTopPlugin: createMarginTopPlugin(CKEditorCombined),
+    RemoveNbspPlugin: createRemoveNbspPlugin(CKEditorCombined)
   };
 
   // Get editor configuration from factory

@@ -17,6 +17,7 @@ import createMarginBottomPlugin from './plugins/MarginBottomPlugin.js';
 import createMarginTopPlugin from './plugins/MarginTopPlugin.js';
 import createMathLivePlugin from './plugins/MathLivePlugin.jsx';
 import createQRCodePlugin from './plugins/QRCodePlugin.jsx';
+import createRemoveNbspPlugin from './plugins/RemoveNbspPlugin.js';
 import createSearchableDropdownPlugin from './plugins/SearchableDropdownPlugin.js';
 import createSoftBreakVisibilityPlugin from './plugins/SoftBreakVisibilityPlugin.js';
 import createSupSubLineHeightPlugin from './plugins/SupSubLineHeightPlugin.js';
@@ -49,6 +50,7 @@ export {
   createMarginTopPlugin,
   createMathLivePlugin,
   createQRCodePlugin,
+  createRemoveNbspPlugin,
   createSearchableDropdownPlugin,
   createSoftBreakVisibilityPlugin,
   createSupSubLineHeightPlugin,
@@ -72,6 +74,7 @@ export { useCKEditorFonts } from './hooks/useCKEditorFonts.js';
 // Utilities
 export * from './utils/ckeditorUtils.js';
 export * from './utils/dropdownSearchUtils.js';
+export { findNbspEdits, cleanNbspText } from './utils/nbspCleanup.js';
 export {
   prepareMathLatexForRender,
   replaceFracWithCfrac,
@@ -113,6 +116,7 @@ export function createAllPlugins(CKEditor, options = {}) {
     MarginTopPlugin: createMarginTopPlugin(CKEditor),
     MathLivePlugin: createMathLivePlugin(CKEditor, { availableFonts: mathLiveFonts, getAvailableFonts, mathRenderFormat }),
     QRCodePlugin: createQRCodePlugin(CKEditor),
+    RemoveNbspPlugin: createRemoveNbspPlugin(CKEditor),
     SoftBreakVisibilityPlugin: createSoftBreakVisibilityPlugin(CKEditor),
     SupSubLineHeightPlugin: createSupSubLineHeightPlugin(CKEditor),
     TableBorderPlugin: createTableBorderPlugin(CKEditor),
