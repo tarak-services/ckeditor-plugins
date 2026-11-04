@@ -82,20 +82,20 @@ export default function createBarcodePlugin(CKEditor) {
 
       // Allow barcode attributes on imageInline
       schema.extend('imageInline', {
-        allowAttributes: ['data-barcode-value', 'data-barcode-format', 'data-barcode-height', 'data-barcode-showtext']
+        allowAttributes: ['data-barcode-value', 'data-barcode-format', 'data-barcode-height', 'data-barcode-showtext', 'data-barcode-module-mm']
       });
 
       // Also allow on imageBlock if it exists
       if (schema.isRegistered('imageBlock')) {
         schema.extend('imageBlock', {
-          allowAttributes: ['data-barcode-value', 'data-barcode-format', 'data-barcode-height', 'data-barcode-showtext']
+          allowAttributes: ['data-barcode-value', 'data-barcode-format', 'data-barcode-height', 'data-barcode-showtext', 'data-barcode-module-mm']
         });
       }
 
       // Set up converters to preserve these attributes in the HTML output
       const conversion = editor.conversion;
 
-      const barcodeAttributes = ['data-barcode-value', 'data-barcode-format', 'data-barcode-height', 'data-barcode-showtext'];
+      const barcodeAttributes = ['data-barcode-value', 'data-barcode-format', 'data-barcode-height', 'data-barcode-showtext', 'data-barcode-module-mm'];
 
       // Downcast (model -> view): Add attributes to the img element
       conversion.for('downcast').add(dispatcher => {
@@ -272,9 +272,13 @@ export default function createBarcodePlugin(CKEditor) {
           let barcodeFormat = domTarget.getAttribute('data-barcode-format');
           let barcodeHeight = domTarget.getAttribute('data-barcode-height');
           let barcodeShowText = domTarget.getAttribute('data-barcode-showtext');
+          let barcodeModuleMm = domTarget.getAttribute('data-barcode-module-mm');
 
           // Try model attributes if DOM doesn't have them
           if (modelElement) {
+            if (!barcodeModuleMm) {
+              barcodeModuleMm = modelElement.getAttribute('data-barcode-module-mm');
+            }
             if (!barcodeValue) {
               barcodeValue = modelElement.getAttribute('data-barcode-value');
             }
@@ -310,6 +314,7 @@ export default function createBarcodePlugin(CKEditor) {
               format: barcodeFormat || 'CODE128',
               height: parseInt(barcodeHeight, 10) || 50,
               showText: barcodeShowText !== 'false',
+              moduleMm: barcodeModuleMm || '',
               imageElement: modelElement
             });
           }
@@ -329,6 +334,7 @@ export default function createBarcodePlugin(CKEditor) {
       const initialFormat = editOptions?.format || 'CODE128';
       const initialHeight = editOptions?.height || 50;
       const initialShowText = editOptions?.showText !== false;
+      const initialModuleMm = editOptions?.moduleMm || '';
 
       // Get variables from editor config
       const barcodeVariables = editor.config.get('qrCodeVariables') || [];
@@ -392,6 +398,16 @@ export default function createBarcodePlugin(CKEditor) {
                  style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
         </div>
 
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 500;">Printed bar width (mm, optional):</label>
+          <input type="number" id="barcode-module-mm" value="${escapeHtml(String(initialModuleMm))}" min="0.1" max="1" step="0.01" placeholder="e.g. 0.33"
+                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
+          <div style="margin-top: 4px; font-size: 12px; color: #666;">
+            Width of the narrowest bar on paper. Fixes the printed size with 5 mm blank margins and a minimum bar height of 9 mm.
+            EMS / India Post: Code 39, 0.25–0.43 mm (0.33 recommended). Leave blank to size by pixels.
+          </div>
+        </div>
+
         <div style="margin-bottom: 20px;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <input type="checkbox" id="barcode-showtext" ${initialShowText ? 'checked' : ''} style="width: 16px; height: 16px;" />
@@ -411,6 +427,7 @@ export default function createBarcodePlugin(CKEditor) {
       const textInput = dialog.querySelector('#barcode-text');
       const formatSelect = dialog.querySelector('#barcode-format');
       const heightInput = dialog.querySelector('#barcode-height');
+      const moduleMmInput = dialog.querySelector('#barcode-module-mm');
       const showTextCheckbox = dialog.querySelector('#barcode-showtext');
       const cancelBtn = dialog.querySelector('#barcode-cancel');
       const insertBtn = dialog.querySelector('#barcode-insert');
@@ -566,6 +583,8 @@ export default function createBarcodePlugin(CKEditor) {
         const format = formatSelect.value;
         const height = parseInt(heightInput.value, 10);
         const showText = showTextCheckbox.checked;
+        const moduleMmRaw = moduleMmInput.value.trim();
+        const moduleMm = moduleMmRaw === '' ? null : Number(moduleMmRaw);
 
         if (!text) {
           dispatchAlert('Please enter a value for the barcode.', 'warning');
@@ -577,9 +596,14 @@ export default function createBarcodePlugin(CKEditor) {
           return;
         }
 
+        if (moduleMm !== null && (!Number.isFinite(moduleMm) || moduleMm < 0.1 || moduleMm > 1)) {
+          dispatchAlert('Printed bar width must be between 0.1 and 1 mm, or blank.', 'warning');
+          return;
+        }
+
         // For Code 39, validate characters (uppercase letters, numbers, and some special chars)
         if (format === 'CODE39') {
-          const hasVars = text.includes('@');
+          const hasVars = text.includes('@') || text.includes('{{');
           if (!hasVars && !/^[A-Z0-9\-. $/+%@]*$/i.test(text)) {
             dispatchAlert('Code 39 only supports: A-Z, 0-9, -, ., space, $, /, +, %', 'warning');
             return;
@@ -589,7 +613,7 @@ export default function createBarcodePlugin(CKEditor) {
         try {
           // For preview, use the variable string itself so the user can see what it encodes
           // If the variable text fails for the barcode format, fall back to a placeholder
-          const hasVars = text.includes('@');
+          const hasVars = text.includes('@') || text.includes('{{');
           let previewText = text;
           let dataUrl;
           if (hasVars) {
@@ -612,6 +636,9 @@ export default function createBarcodePlugin(CKEditor) {
               'data-barcode-height': height.toString(),
               'data-barcode-showtext': showText.toString()
             };
+            if (moduleMm !== null) {
+              imageAttrs['data-barcode-module-mm'] = String(moduleMm);
+            }
 
             if (isEditing) {
               const selection = editor.model.document.selection;
@@ -636,6 +663,9 @@ export default function createBarcodePlugin(CKEditor) {
               if (elementToReplace) {
                 for (const [key, value] of Object.entries(imageAttrs)) {
                   writer.setAttribute(key, value, elementToReplace);
+                }
+                if (moduleMm === null) {
+                  writer.removeAttribute('data-barcode-module-mm', elementToReplace);
                 }
               } else {
                 const imageElement = writer.createElement('imageInline', imageAttrs);

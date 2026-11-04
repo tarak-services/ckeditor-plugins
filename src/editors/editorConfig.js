@@ -238,7 +238,8 @@ export function createEditorConfig(CKEditor, customPlugins = {}, mentionFeeds = 
             'data-barcode-value',
             'data-barcode-format',
             'data-barcode-height',
-            'data-barcode-showtext'
+            'data-barcode-showtext',
+            'data-barcode-module-mm'
           ]
         }
       ]
