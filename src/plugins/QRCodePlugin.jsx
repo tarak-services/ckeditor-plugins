@@ -1,4 +1,5 @@
 import * as QRCode from 'qrcode';
+import { getDoubleClickObserver } from './doubleClickObserver.js';
 
 /**
  * Utility to dispatch custom alert events that can be caught by AlertContext
@@ -18,19 +19,7 @@ const dispatchAlert = (message, type = 'error') => {
 export default function createQRCodePlugin(CKEditor) {
   const { Plugin } = CKEditor;
   const { ButtonView } = CKEditor;
-  const { DomEventObserver } = CKEditor;
-
-  // Observer for double-click events
-  class DoubleClickObserver extends DomEventObserver {
-    constructor(view) {
-      super(view);
-      this.domEventType = 'dblclick';
-    }
-
-    onDomEvent(domEvent) {
-      this.fire(domEvent.type, domEvent);
-    }
-  }
+  const DoubleClickObserver = getDoubleClickObserver(CKEditor);
 
   class QRCodePlugin extends Plugin {
   static get pluginName() {
