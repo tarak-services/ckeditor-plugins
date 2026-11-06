@@ -7,8 +7,11 @@ import { addSearchToPanel, filterListItems, clearSearch, markPanel } from '../ut
  */
 export default function createLineHeightPlugin(CKEditor) {
   const { Plugin, Command } = CKEditor;
-  const { Collection } = CKEditor;
+  const { Collection, priorities } = CKEditor;
   const { ViewModel, addListToDropdown, createDropdown } = CKEditor;
+
+  const BLOCK_ATTR = 'blockLineHeight';
+  const MARKER_CLASS = 'custom-line-height';
 
   /**
    * Custom Line Height plugin for CKEditor
@@ -81,14 +84,51 @@ export default function createLineHeightPlugin(CKEditor) {
       return dropdownView;
     });
 
-    // Allow line-height in the schema
+    // Line height lives on the block: a span's line-height cannot shrink the
+    // line box below the parent <p>'s, so a span-only value can only grow lines.
+    // The marker class lets setmaker tell these apart from pasted (Word) p
+    // line-heights, which it strips before rendering.
+    editor.model.schema.extend('$block', { allowAttributes: BLOCK_ATTR });
+    editor.model.schema.setAttributeProperties(BLOCK_ATTR, { isFormatting: true });
+
+    editor.conversion.for('downcast').add(dispatcher => {
+      dispatcher.on(`attribute:${BLOCK_ATTR}`, (evt, data, conversionApi) => {
+        if (!conversionApi.consumable.consume(data.item, evt.name)) return;
+        const viewElement = conversionApi.mapper.toViewElement(data.item);
+        if (!viewElement) return;
+        const { writer } = conversionApi;
+        if (data.attributeNewValue) {
+          writer.setStyle('line-height', data.attributeNewValue, viewElement);
+          writer.addClass(MARKER_CLASS, viewElement);
+        } else {
+          writer.removeStyle('line-height', viewElement);
+          writer.removeClass(MARKER_CLASS, viewElement);
+        }
+      });
+    });
+
+    // Must run before GeneralHtmlSupport (also 'low'), which would otherwise
+    // consume the style and class into htmlPAttributes.
+    editor.conversion.for('upcast').attributeToAttribute({
+      view: {
+        classes: MARKER_CLASS,
+        styles: { 'line-height': /[\s\S]+/ }
+      },
+      model: {
+        key: BLOCK_ATTR,
+        value: viewElement => viewElement.getStyle('line-height')
+      },
+      converterPriority: priorities.low + 1
+    });
+
+    // Legacy: older content stores line height on <span>s. Keep round-tripping
+    // it; the command clears it from blocks it touches.
     editor.model.schema.extend('$text', { allowAttributes: 'lineHeight' });
     editor.model.schema.setAttributeProperties('lineHeight', {
       isFormatting: true,
       copyOnEnter: true
     });
 
-    // Conversion from model to view (editing)
     editor.conversion.for('downcast').attributeToElement({
       model: 'lineHeight',
       view: (lineHeight, { writer }) => {
@@ -194,37 +234,56 @@ export default function createLineHeightPlugin(CKEditor) {
    */
   class LineHeightCommand extends Command {
     refresh() {
-      const model = this.editor.model;
-      const selection = model.document.selection;
-
-      this.isEnabled = model.schema.checkAttributeInSelection(selection, 'lineHeight');
-      this.value = selection.getAttribute('lineHeight');
+      const blocks = this._getBlocks();
+      this.isEnabled = blocks.length > 0;
+      this.value = blocks.length ? blocks[0].getAttribute(BLOCK_ATTR) : undefined;
     }
 
     execute(options = {}) {
       const model = this.editor.model;
-      const selection = model.document.selection;
       const value = options.value;
 
       model.change(writer => {
-        if (selection.isCollapsed) {
-          if (value) {
-            writer.setSelectionAttribute('lineHeight', value);
-          } else {
-            writer.removeSelectionAttribute('lineHeight');
-          }
-        } else {
-          const ranges = model.schema.getValidRanges(selection.getRanges(), 'lineHeight');
+        writer.removeSelectionAttribute('lineHeight');
 
-          for (const range of ranges) {
-            if (value) {
-              writer.setAttribute('lineHeight', value, range);
-            } else {
-              writer.removeAttribute('lineHeight', range);
-            }
+        for (const block of this._getBlocks()) {
+          if (value) {
+            writer.setAttribute(BLOCK_ATTR, value, block);
+          } else {
+            writer.removeAttribute(BLOCK_ATTR, block);
           }
+          writer.removeAttribute('lineHeight', writer.createRangeIn(block));
+          removeGhsLineHeight(writer, block);
         }
       });
+    }
+
+    _getBlocks() {
+      const model = this.editor.model;
+      return Array.from(model.document.selection.getSelectedBlocks())
+        .filter(block => model.schema.checkAttribute(block, BLOCK_ATTR));
+    }
+  }
+
+  // Pasted content can carry its own line-height in GHS attributes
+  // (e.g. htmlPAttributes.styles), which would fight ours in the downcast.
+  function removeGhsLineHeight(writer, block) {
+    for (const [key, attrValue] of block.getAttributes()) {
+      if (!/^html.*Attributes$/.test(key) || !attrValue?.styles?.['line-height']) continue;
+
+      const { 'line-height': _removed, ...styles } = attrValue.styles;
+      const next = { ...attrValue };
+      if (Object.keys(styles).length) {
+        next.styles = styles;
+      } else {
+        delete next.styles;
+      }
+
+      if (Object.keys(next).length) {
+        writer.setAttribute(key, next, block);
+      } else {
+        writer.removeAttribute(key, block);
+      }
     }
   }
 
