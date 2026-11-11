@@ -22,6 +22,13 @@
 .ML__msubsup .ML__msubsup [style*="font-size"] {
   font-size: calc(var(--scriptscript-scale) * 100%) !important;
 }
+.ML__msubsup span[style^="height:0.39em"] {
+  font-size: 70% !important;
+}
+.ML__msubsup span[style^="height:0.39em"] .ML__cmr {
+  font-family: KaTeX_Main !important;
+  vertical-align: -0.08em;
+}
 
 /* MathLive's editor content box clips both axes (overflow: hidden), which
    crops oversized scripts when --script-scale is raised. Use clip-path with
@@ -91,7 +98,23 @@
 }
 
 .ML__accent-body {
-  font-family: KaTeX_Main;
+  font-family: KaTeX_Main !important;
+}
+
+.ML__vlist:has(> .ML__center > .ML__accent-body) > span:first-child,
+.ML__vlist:has(> .ML__center > span > span > .ML__stretchy) > span:first-child {
+  text-align: center;
+}
+
+.ML__vlist > .ML__center:has(> .ML__accent-body),
+.ML__vlist > .ML__center:has(> span > span > .ML__stretchy) {
+  margin-left: 0 !important;
+}
+
+.ML__vlist > .ML__center:has(> span > span > .ML__stretchy) > span:not(.ML__pstrut),
+.ML__vlist > .ML__center:has(> span > span > .ML__stretchy) > span:not(.ML__pstrut) > span {
+  display: block !important;
+  width: 100%;
 }
 
 /* Upright integrals: New Computer Modern ss02 display/text glyphs, overlaid
