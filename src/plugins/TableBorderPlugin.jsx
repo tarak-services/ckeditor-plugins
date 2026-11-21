@@ -23,6 +23,19 @@ export default function createTableBorderPlugin(CKEditor) {
       // Default border style for new table cells (only used when table already has borders)
       const defaultCellBorder = '1px dashed #000';
 
+      // Built-in TableCellProperties attributes whose style the upcast below also
+      // mirrors into `customCellStyle`. This converter runs after the built-in one,
+      // so a stale mirrored value would overwrite the user's new choice in the data.
+      const BUILT_IN_CELL_STYLE_KEYS = {
+        tableCellVerticalAlignment: 'vertical-align',
+        tableCellHorizontalAlignment: 'text-align',
+        tableCellPadding: 'padding',
+        tableCellBackgroundColor: 'background-color'
+      };
+      const builtInAttributeForStyle = Object.fromEntries(
+        Object.entries(BUILT_IN_CELL_STYLE_KEYS).map(([attr, style]) => [style, attr])
+      );
+
       // Register custom attributes on schema
       editor.model.schema.extend('table', {
         allowAttributes: ['customTableStyle']
@@ -90,6 +103,33 @@ export default function createTableBorderPlugin(CKEditor) {
         return wasFixed;
       });
 
+      // Once a built-in cell property changes, it owns that style: drop the
+      // mirrored copy from `customCellStyle`.
+      editor.model.document.registerPostFixer(writer => {
+        let wasFixed = false;
+
+        for (const change of editor.model.document.differ.getChanges()) {
+          const styleKey = change.type === 'attribute' && BUILT_IN_CELL_STYLE_KEYS[change.attributeKey];
+          if (!styleKey) continue;
+
+          const cell = change.range.start.nodeAfter;
+          if (!cell || !cell.is('element', 'tableCell')) continue;
+
+          const styles = cell.getAttribute('customCellStyle');
+          if (!styles || !(styleKey in styles)) continue;
+
+          const { [styleKey]: _stale, ...remaining } = styles;
+          if (Object.keys(remaining).length) {
+            writer.setAttribute('customCellStyle', remaining, cell);
+          } else {
+            writer.removeAttribute('customCellStyle', cell);
+          }
+          wasFixed = true;
+        }
+
+        return wasFixed;
+      });
+
       // Add downcast converter for table style
       editor.conversion.for('downcast').add(dispatcher => {
         dispatcher.on('attribute:customTableStyle:table', (evt, data, conversionApi) => {
@@ -126,9 +166,11 @@ export default function createTableBorderPlugin(CKEditor) {
           const cellView = conversionApi.mapper.toViewElement(data.item);
 
           if (cellView) {
-            // First, remove old styles if they exist
+            // First, remove old styles if they exist (unless a built-in attribute now owns them)
             if (data.attributeOldValue) {
               Object.keys(data.attributeOldValue).forEach(key => {
+                const builtInAttribute = builtInAttributeForStyle[key];
+                if (builtInAttribute && data.item.hasAttribute(builtInAttribute)) return;
                 viewWriter.removeStyle(key, cellView);
               });
             }
