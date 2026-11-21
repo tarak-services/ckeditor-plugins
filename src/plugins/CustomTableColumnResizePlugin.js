@@ -7,11 +7,13 @@
  * @param {Object} CKEditor - CKEditor instance from CDN
  * @returns {Class} CustomTableColumnResizePlugin class
  */
+// Module scope: each editor builds its own plugin class, but ids must be unique page-wide.
+let nextEditorId = 0;
+
 export default function createCustomTableColumnResizePlugin(CKEditor) {
   const { Plugin } = CKEditor;
 
   const OVERLAY_ID = 'custom-table-resize-overlay-shared';
-  let globalListenersSetup = false;
 
   class CustomTableColumnResizePlugin extends Plugin {
     static get pluginName() {
@@ -23,6 +25,7 @@ export default function createCustomTableColumnResizePlugin(CKEditor) {
 
       this._resizeState = null;
       this._initialized = false;
+      this._editorId = String(nextEditorId++);
 
       this._onMouseDown = this._onMouseDown.bind(this);
       this._onMouseMove = this._onMouseMove.bind(this);
@@ -54,6 +57,7 @@ export default function createCustomTableColumnResizePlugin(CKEditor) {
 
     destroy() {
       this._removeGlobalListeners();
+      this._removeOwnHandles();
       super.destroy();
     }
 
@@ -79,19 +83,26 @@ export default function createCustomTableColumnResizePlugin(CKEditor) {
     }
 
     _setupGlobalListeners() {
-      if (!globalListenersSetup) {
-        window.addEventListener('scroll', () => this._updateOverlay(), true);
-        window.addEventListener('resize', () => this._updateOverlay());
-        globalListenersSetup = true;
-      }
-
+      window.addEventListener('scroll', this._updateOverlay, true);
+      window.addEventListener('resize', this._updateOverlay);
       document.addEventListener('mousemove', this._onMouseMove);
       document.addEventListener('mouseup', this._onMouseUp);
     }
 
     _removeGlobalListeners() {
+      window.removeEventListener('scroll', this._updateOverlay, true);
+      window.removeEventListener('resize', this._updateOverlay);
       document.removeEventListener('mousemove', this._onMouseMove);
       document.removeEventListener('mouseup', this._onMouseUp);
+    }
+
+    // Pages run one editor per language over a shared overlay. A handle must be
+    // created by the editor that owns its table: only that editor can map the
+    // table back to its model and save the new widths.
+    _removeOwnHandles() {
+      this._overlayContainer
+        ?.querySelectorAll(`[data-editor-id="${this._editorId}"]`)
+        .forEach(handle => handle.remove());
     }
 
     _updateOverlay() {
@@ -103,10 +114,12 @@ export default function createCustomTableColumnResizePlugin(CKEditor) {
       // Don't update during input popover interaction
       if (this._inputPopover) return;
 
-      this._overlayContainer.innerHTML = '';
+      this._removeOwnHandles();
       const processedTables = new Set();
 
-      const editables = document.querySelectorAll('.ck-editor__editable');
+      const editables = this.editor.model.document.getRootNames()
+        .map(rootName => this.editor.ui.getEditableElement(rootName))
+        .filter(Boolean);
       editables.forEach(editable => {
         const tables = editable.querySelectorAll('table');
         tables.forEach(table => {
@@ -165,6 +178,7 @@ export default function createCustomTableColumnResizePlugin(CKEditor) {
       handle.className = 'custom-table-resize-handle';
       handle.dataset.columnIndex = columnIndex;
       handle.dataset.tableId = table.dataset.resizeId;
+      handle.dataset.editorId = this._editorId;
 
       handle.style.cssText = `
         position: fixed;
