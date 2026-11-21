@@ -193,6 +193,16 @@
   min-width: 0 !important;
 }
 
+/* CKEditor wraps a single-paragraph cell in an inline-block span, whose baseline
+   is its LAST line. A `vertical-align: baseline` row then lines a short label
+   ("S1 :") up with the last line of its wrapped neighbour, while the preview and
+   PDF (no span) line it up with the first line. Top-aligning the span puts the
+   cell baseline back on the first line so the editor matches the output. */
+.ck-editor__editable td > .ck-table-bogus-paragraph,
+.ck-editor__editable th > .ck-table-bogus-paragraph {
+  vertical-align: top;
+}
+
 /* Make CKEditor's resize handles easier to grab */
 .ck-table-column-resizer {
   width: 10px !important;
