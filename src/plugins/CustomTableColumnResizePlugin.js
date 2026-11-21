@@ -551,6 +551,17 @@ export default function createCustomTableColumnResizePlugin(CKEditor) {
 
         editor.model.change(writer => {
           writer.setAttribute('columnWidths', widthString, modelTable);
+
+          // The editor lays tables out fixed, where <col> widths beat cell widths, but the
+          // preview/PDF use auto layout, where a leftover cell width keeps the old column size.
+          for (const row of modelTable.getChildren()) {
+            if (!row.is('element', 'tableRow')) continue;
+            for (const cell of row.getChildren()) {
+              if (cell.is('element', 'tableCell') && cell.hasAttribute('tableCellWidth')) {
+                writer.removeAttribute('tableCellWidth', cell);
+              }
+            }
+          }
         });
       } catch (e) {
         console.error('[CustomTableColumnResize] Model update error:', e);
