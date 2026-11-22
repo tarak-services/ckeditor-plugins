@@ -30,6 +30,10 @@
   height: 19.5px;
 }
 
+.lineNumberSpacer {
+  flex-shrink: 0;
+}
+
 .textarea {
   flex: 1;
   padding: 10px;
