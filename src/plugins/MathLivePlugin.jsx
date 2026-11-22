@@ -1,5 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import DOMPurify from 'dompurify';
 import 'mathlive/static.css';  // Required for convertLatexToMarkup rendered output
 import MathLiveDialog from './MathLiveDialog.jsx';
 import MathLiveErrorBoundary from './MathLiveErrorBoundary.jsx';
@@ -13,6 +14,22 @@ import('mathlive').then(ml => {
   convertLatexToMarkup = ml.convertLatexToMarkup;
   convertLatexToMathMl = ml.convertLatexToMathMl;
 });
+
+// LaTeX comes from stored documents, so MathLive's output is untrusted markup.
+// MathLive never emits these tags; anything that produces them is injected.
+const MATH_SANITIZE_OPTIONS = {
+  FORBID_TAGS: [
+    'style', 'img', 'image', 'picture', 'source', 'video', 'audio',
+    'form', 'input', 'button', 'textarea', 'select',
+  ],
+};
+
+function setSanitizedMarkup(element, markup) {
+  if (!DOMPurify.isSupported) {
+    throw new Error('DOMPurify is not supported in this environment');
+  }
+  element.innerHTML = DOMPurify.sanitize(markup, MATH_SANITIZE_OPTIONS);
+}
 
 // NOTE: ResizeObserver warnings from MathLive are harmless and expected
 // They occur when the browser can't deliver all resize notifications in one frame
@@ -379,13 +396,13 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
           const cleaned = this._stripHtmlStyle(latexToRender);
           const ml = convertLatexToMathMl(cleaned, renderOptions);
           const wrapped = ml.trimStart().startsWith('<math') ? ml : `<math>${ml}</math>`;
-          element.innerHTML = wrapped;
+          setSanitizedMarkup(element, wrapped);
         } catch (e) {
           this._renderFallback(element, latex);
         }
       } else if (convertLatexToMarkup) {
         try {
-          element.innerHTML = convertLatexToMarkup(latexToRender, renderOptions);
+          setSanitizedMarkup(element, convertLatexToMarkup(latexToRender, renderOptions));
         } catch (e) {
           this._renderFallback(element, latex);
         }
