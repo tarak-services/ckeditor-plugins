@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import 'mathlive/static.css';  // Required for convertLatexToMarkup rendered output
 import MathLiveDialog from './MathLiveDialog.jsx';
 import MathLiveErrorBoundary from './MathLiveErrorBoundary.jsx';
-import { prepareMathLatexForRender, isKokilaFontFamily } from '../utils/fracReplace';
+import { prepareMathLatexForRender, isKokilaFontFamily, stripHtmlStyle } from '../utils/fracReplace';
 import { applyMathLatexMarginStyles, extractMathMarginsFromView } from '../utils/mathMarginUtils';
 
 // We'll import MathLive functions dynamically to avoid interfering with initialization
@@ -376,7 +376,7 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
 
       if (useFormat === 'mathml' && convertLatexToMathMl) {
         try {
-          const cleaned = this._stripHtmlStyle(latexToRender);
+          const cleaned = stripHtmlStyle(latexToRender);
           const ml = convertLatexToMathMl(cleaned, renderOptions);
           const wrapped = ml.trimStart().startsWith('<math') ? ml : `<math>${ml}</math>`;
           element.innerHTML = wrapped;
@@ -394,39 +394,6 @@ export default function createMathLivePlugin(CKEditor, options = {}) {
       }
 
       applyMathLatexMarginStyles(element, margins);
-    }
-
-    /**
-     * Strip \htmlStyle{...}{content} → content
-     * MathML has no equivalent of \htmlStyle, so we unwrap to keep the content.
-     */
-    _stripHtmlStyle(latex) {
-      let result = latex;
-      let changed = true;
-      while (changed) {
-        changed = false;
-        const idx = result.indexOf('\\htmlStyle');
-        if (idx === -1) break;
-
-        let pos = idx + '\\htmlStyle'.length;
-        while (pos < result.length && result[pos] === ' ') pos++;
-        if (pos >= result.length || result[pos] !== '{') continue;
-
-        const styleEnd = this._findMatchingBrace(result, pos);
-        if (styleEnd === -1) break;
-
-        let contentStart = styleEnd + 1;
-        while (contentStart < result.length && result[contentStart] === ' ') contentStart++;
-        if (contentStart >= result.length || result[contentStart] !== '{') break;
-
-        const contentEnd = this._findMatchingBrace(result, contentStart);
-        if (contentEnd === -1) break;
-
-        const innerContent = result.substring(contentStart + 1, contentEnd);
-        result = result.substring(0, idx) + innerContent + result.substring(contentEnd + 1);
-        changed = true;
-      }
-      return result;
     }
 
     _renderFallback(element, latex) {
