@@ -380,13 +380,6 @@ export default function createQRCodePlugin(CKEditor) {
       return v;
     });
 
-    // Escape HTML to prevent XSS
-    const escapeHtml = (text) => {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    };
-
     // Create a simple modal dialog
     const modal = document.createElement('div');
     modal.style.cssText = `
@@ -419,13 +412,12 @@ export default function createQRCodePlugin(CKEditor) {
       <div style="margin-bottom: 16px; position: relative;">
         <label style="display: block; margin-bottom: 8px; font-weight: 500;">Text/URL:${hasVariables ? ' <span style="font-weight: normal; color: #666; font-size: 12px;">(Type @ to insert variables)</span>' : ''}</label>
         <input type="text" id="qrcode-text" placeholder="${hasVariables ? 'Type @ to insert variables, e.g. @parcel_id' : 'Enter text or URL...'}"
-               value="${escapeHtml(initialText)}"
                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" autocomplete="off" />
         <div id="qrcode-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10001;"></div>
       </div>
       <div style="margin-bottom: 20px;">
         <label style="display: block; margin-bottom: 8px; font-weight: 500;">Size (pixels):</label>
-        <input type="number" id="qrcode-size" value="${initialSize}" min="1" max="1000" step="1"
+        <input type="number" id="qrcode-size" min="1" max="1000" step="1"
                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
       </div>
       <div style="display: flex; gap: 10px; justify-content: flex-end;">
@@ -443,6 +435,11 @@ export default function createQRCodePlugin(CKEditor) {
     const insertBtn = dialog.querySelector('#qrcode-insert');
     const dropdown = dialog.querySelector('#qrcode-dropdown');
 
+    // Saved document values must only ever be assigned as properties, never
+    // interpolated into the markup above.
+    textInput.value = String(initialText);
+    sizeInput.value = String(initialSize);
+
     // Variable autocomplete state
     let selectedIndex = -1;
     let filteredVariables = [];
@@ -457,12 +454,20 @@ export default function createQRCodePlugin(CKEditor) {
         return;
       }
 
-      dropdown.innerHTML = variables.map((v, idx) => `
-        <div class="qrcode-var-item" data-index="${idx}" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; ${idx === selectedIndex ? 'background: #e6f4ff;' : ''}">
-          <div style="font-weight: 500; color: #1677ff;">@${escapeHtml(v.key)}</div>
-          <div style="font-size: 11px; color: #666;">${escapeHtml(v.label || v.key)}</div>
-        </div>
-      `).join('');
+      dropdown.replaceChildren(...variables.map((v, idx) => {
+        const item = document.createElement('div');
+        item.className = 'qrcode-var-item';
+        item.dataset.index = String(idx);
+        item.style.cssText = `padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; ${idx === selectedIndex ? 'background: #e6f4ff;' : ''}`;
+        const keyEl = document.createElement('div');
+        keyEl.style.cssText = 'font-weight: 500; color: #1677ff;';
+        keyEl.textContent = `@${v.key}`;
+        const labelEl = document.createElement('div');
+        labelEl.style.cssText = 'font-size: 11px; color: #666;';
+        labelEl.textContent = v.label || v.key;
+        item.append(keyEl, labelEl);
+        return item;
+      }));
       dropdown.style.display = 'block';
 
       // Add click handlers
