@@ -10,6 +10,16 @@
 // Module scope: each editor builds its own plugin class, but ids must be unique page-wide.
 let nextEditorId = 0;
 
+// colspan comes from saved content and each unit becomes a <col>, so it must be bounded.
+const MAX_COLSPAN = 50;
+const MAX_COLUMNS = 200;
+
+function parseColspan(value) {
+  const span = parseInt(value, 10);
+  if (!Number.isFinite(span) || span < 1) return 1;
+  return Math.min(span, MAX_COLSPAN);
+}
+
 export default function createCustomTableColumnResizePlugin(CKEditor) {
   const { Plugin } = CKEditor;
 
@@ -221,6 +231,7 @@ export default function createCustomTableColumnResizePlugin(CKEditor) {
       let colgroup = table.querySelector('colgroup');
       if (!colgroup) {
         colgroup = this._createColgroup(table);
+        if (!colgroup) return;
       }
 
       const cols = colgroup.querySelectorAll('col');
@@ -762,12 +773,16 @@ export default function createCustomTableColumnResizePlugin(CKEditor) {
       const tableRect = table.getBoundingClientRect();
       if (tableRect.width === 0) return null;
 
+      const spans = cells.map(cell => parseColspan(cell.getAttribute('colspan')));
+      const columnCount = spans.reduce((sum, span) => sum + span, 0);
+      if (columnCount > MAX_COLUMNS) return null;
+
       const colgroup = document.createElement('colgroup');
 
       // Calculate widths based on actual cell positions to preserve layout
-      cells.forEach(cell => {
+      cells.forEach((cell, i) => {
         const cellRect = cell.getBoundingClientRect();
-        const colspan = parseInt(cell.getAttribute('colspan') || '1', 10);
+        const colspan = spans[i];
         const cellWidthPercent = (cellRect.width / tableRect.width) * 100;
         const singleColWidth = cellWidthPercent / colspan;
 
