@@ -328,12 +328,12 @@ export default function createBarcodePlugin(CKEditor) {
       // Get variables from editor config
       const barcodeVariables = editor.config.get('qrCodeVariables') || [];
 
-      // Escape HTML to prevent XSS
-      const escapeHtml = (text) => {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-      };
+      const escapeHtml = (text) => String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 
       // Create modal dialog
       const modal = document.createElement('div');
@@ -368,28 +368,27 @@ export default function createBarcodePlugin(CKEditor) {
         <div style="margin-bottom: 16px;">
           <label style="display: block; margin-bottom: 8px; font-weight: 500;">Barcode Type:</label>
           <select id="barcode-format" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
-            <option value="CODE128" ${initialFormat === 'CODE128' ? 'selected' : ''}>Code 128 (alphanumeric)</option>
-            <option value="CODE39" ${initialFormat === 'CODE39' ? 'selected' : ''}>Code 39 (alphanumeric, uppercase)</option>
+            <option value="CODE128">Code 128 (alphanumeric)</option>
+            <option value="CODE39">Code 39 (alphanumeric, uppercase)</option>
           </select>
         </div>
 
         <div style="margin-bottom: 16px; position: relative;">
           <label style="display: block; margin-bottom: 8px; font-weight: 500;">Value:${hasVariables ? ' <span style="font-weight: normal; color: #666; font-size: 12px;">(Type @ to insert variables)</span>' : ''}</label>
           <input type="text" id="barcode-text" placeholder="${hasVariables ? 'Type @ to insert variables' : 'Enter barcode value...'}"
-                 value="${escapeHtml(initialText)}"
                  style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" autocomplete="off" />
           <div id="barcode-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10001;"></div>
         </div>
 
         <div style="margin-bottom: 16px;">
           <label style="display: block; margin-bottom: 8px; font-weight: 500;">Height (pixels):</label>
-          <input type="number" id="barcode-height" value="${initialHeight}" min="20" max="200" step="5"
+          <input type="number" id="barcode-height" min="20" max="200" step="5"
                  style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
         </div>
 
         <div style="margin-bottom: 16px;">
           <label style="display: block; margin-bottom: 8px; font-weight: 500;">Printed bar width (mm, optional):</label>
-          <input type="number" id="barcode-module-mm" value="${escapeHtml(String(initialModuleMm))}" min="0.1" max="1" step="0.01" placeholder="e.g. 0.33"
+          <input type="number" id="barcode-module-mm" min="0.1" max="1" step="0.01" placeholder="e.g. 0.33"
                  style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
           <div style="margin-top: 4px; font-size: 12px; color: #666;">
             Width of the narrowest bar on paper. Fixes the printed size with 5 mm blank margins and a minimum bar height of 9 mm.
@@ -399,7 +398,7 @@ export default function createBarcodePlugin(CKEditor) {
 
         <div style="margin-bottom: 20px;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="barcode-showtext" ${initialShowText ? 'checked' : ''} style="width: 16px; height: 16px;" />
+            <input type="checkbox" id="barcode-showtext" style="width: 16px; height: 16px;" />
             <span style="font-weight: 500;">Show text below barcode</span>
           </label>
         </div>
@@ -421,6 +420,13 @@ export default function createBarcodePlugin(CKEditor) {
       const cancelBtn = dialog.querySelector('#barcode-cancel');
       const insertBtn = dialog.querySelector('#barcode-insert');
       const dropdown = dialog.querySelector('#barcode-dropdown');
+
+      // Saved document values must only reach the form through DOM properties, never the HTML template.
+      formatSelect.value = initialFormat === 'CODE39' ? 'CODE39' : 'CODE128';
+      textInput.value = String(initialText);
+      heightInput.value = String(initialHeight);
+      moduleMmInput.value = String(initialModuleMm);
+      showTextCheckbox.checked = initialShowText;
 
       // Variable autocomplete state
       let selectedIndex = -1;

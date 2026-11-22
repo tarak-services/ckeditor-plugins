@@ -380,12 +380,12 @@ export default function createQRCodePlugin(CKEditor) {
       return v;
     });
 
-    // Escape HTML to prevent XSS
-    const escapeHtml = (text) => {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    };
+    const escapeHtml = (text) => String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
     // Create a simple modal dialog
     const modal = document.createElement('div');
@@ -419,13 +419,12 @@ export default function createQRCodePlugin(CKEditor) {
       <div style="margin-bottom: 16px; position: relative;">
         <label style="display: block; margin-bottom: 8px; font-weight: 500;">Text/URL:${hasVariables ? ' <span style="font-weight: normal; color: #666; font-size: 12px;">(Type @ to insert variables)</span>' : ''}</label>
         <input type="text" id="qrcode-text" placeholder="${hasVariables ? 'Type @ to insert variables, e.g. @parcel_id' : 'Enter text or URL...'}"
-               value="${escapeHtml(initialText)}"
                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" autocomplete="off" />
         <div id="qrcode-dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 10001;"></div>
       </div>
       <div style="margin-bottom: 20px;">
         <label style="display: block; margin-bottom: 8px; font-weight: 500;">Size (pixels):</label>
-        <input type="number" id="qrcode-size" value="${initialSize}" min="1" max="1000" step="1"
+        <input type="number" id="qrcode-size" min="1" max="1000" step="1"
                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box;" />
       </div>
       <div style="display: flex; gap: 10px; justify-content: flex-end;">
@@ -442,6 +441,10 @@ export default function createQRCodePlugin(CKEditor) {
     const cancelBtn = dialog.querySelector('#qrcode-cancel');
     const insertBtn = dialog.querySelector('#qrcode-insert');
     const dropdown = dialog.querySelector('#qrcode-dropdown');
+
+    // Saved document values must only reach the form through DOM properties, never the HTML template.
+    textInput.value = String(initialText);
+    sizeInput.value = String(initialSize);
 
     // Variable autocomplete state
     let selectedIndex = -1;
