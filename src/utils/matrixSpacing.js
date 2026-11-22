@@ -41,14 +41,31 @@ function normalizeMatrixBody(body) {
 }
 
 /** Run `transformBody(body)` over every matrix env body in `latex`. */
+// Each body runs to the first matching `\end{env}`. Once an env has no
+// closing tag left, later openers of that env are skipped without rescanning
+// the rest of the string.
 function transformMatrixBodies(latex, transformBody) {
-  const envRe = new RegExp(
-    `\\\\begin\\{(${ENV_ALT})\\}([\\s\\S]*?)\\\\end\\{\\1\\}`,
-    'g'
-  );
-  return latex.replace(envRe, (_m, env, body) => {
-    return `\\begin{${env}}${transformBody(body)}\\end{${env}}`;
-  });
+  const unclosed = new Set();
+  let out = '';
+  let last = 0;
+  const beginRe = new RegExp(`\\\\begin\\{(${ENV_ALT})\\}`, 'g');
+  let m;
+  while ((m = beginRe.exec(latex)) !== null) {
+    const env = m[1];
+    const endTag = `\\end{${env}}`;
+    const bodyStart = m.index + m[0].length;
+    const endIndex = unclosed.has(env) ? -1 : latex.indexOf(endTag, bodyStart);
+    if (endIndex === -1) {
+      unclosed.add(env);
+      beginRe.lastIndex = m.index + 1;
+      continue;
+    }
+    out += latex.slice(last, m.index)
+      + `\\begin{${env}}${transformBody(latex.slice(bodyStart, endIndex))}${endTag}`;
+    last = endIndex + endTag.length;
+    beginRe.lastIndex = last;
+  }
+  return out + latex.slice(last);
 }
 
 /** Remove all matrix spacing injections this module may have added. */
