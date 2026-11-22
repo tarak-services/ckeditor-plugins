@@ -36,5 +36,11 @@
     "mathlive"
   ],
   "author": "",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "scripts": {
+    "test": "node --import ./tests/register-jsx.mjs --test tests/barcode-dialog-xss.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1"
+  }
 }
