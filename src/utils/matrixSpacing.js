@@ -30,25 +30,96 @@ export function hasMatrix(latex) {
   return typeof latex === 'string' && MATRIX_DETECT_RE.test(latex);
 }
 
-/** Strip prior column hspace injections and row spacing markers from `body`. */
-function normalizeMatrixBody(body) {
-  return body
-    // Drop `\hspace{...}` (with optional surrounding whitespace) that sits
-    // directly before a `&` cell separator -- that's our column injection.
-    .replace(/\\hspace\{[^}]*\}\s*(?=&)/g, '')
-    // Drop `\\[Xpt]` row spacing markers back to bare `\\`.
-    .replace(/\\\\\[[^\]]*\]/g, '\\\\');
+const HSPACE_OPEN = '\\hspace{';
+const ROW_SPACING_OPEN = '\\\\[';
+const WHITESPACE_RUN = /\s*/y;
+
+// The two strips below are index scans rather than regexes because an
+// unclosed `\hspace{` or `\\[` makes a regex rescan to the end for every
+// occurrence, which is quadratic on untrusted formulas.
+
+/** Drop `\hspace{...}` plus trailing whitespace that sits directly before `&`. */
+function stripColumnSpacing(body) {
+  let out = '';
+  let cursor = 0;
+  let from = 0;
+  for (;;) {
+    const start = body.indexOf(HSPACE_OPEN, from);
+    if (start === -1) break;
+    const close = body.indexOf('}', start + HSPACE_OPEN.length);
+    if (close === -1) break;
+    WHITESPACE_RUN.lastIndex = close + 1;
+    WHITESPACE_RUN.exec(body);
+    const after = WHITESPACE_RUN.lastIndex;
+    if (body[after] === '&') {
+      out += body.slice(cursor, start);
+      cursor = after;
+      from = after;
+    } else {
+      // Every other `\hspace{` before `close` would end at the same brace.
+      from = close + 1;
+    }
+  }
+  return out + body.slice(cursor);
 }
 
-/** Run `transformBody(body)` over every matrix env body in `latex`. */
+/** Turn `\\[Xpt]` row spacing markers back into bare `\\`. */
+function stripRowSpacing(body) {
+  let out = '';
+  let cursor = 0;
+  for (;;) {
+    const start = body.indexOf(ROW_SPACING_OPEN, cursor);
+    if (start === -1) break;
+    const close = body.indexOf(']', start + ROW_SPACING_OPEN.length);
+    if (close === -1) break;
+    out += body.slice(cursor, start) + '\\\\';
+    cursor = close + 1;
+  }
+  return out + body.slice(cursor);
+}
+
+/** Strip prior column hspace injections and row spacing markers from `body`. */
+function normalizeMatrixBody(body) {
+  return stripRowSpacing(stripColumnSpacing(body));
+}
+
+/**
+ * Run `transformBody(body)` over every matrix env body in `latex`.
+ *
+ * Each `\begin{env}` pairs with the nearest following `\end{env}`; nested or
+ * overlapping begins inside a paired body are left as body text. Unclosed
+ * begins are skipped in one pass (a lazy regex would rescan to the end for
+ * each of them, which is quadratic on untrusted formulas).
+ */
 function transformMatrixBodies(latex, transformBody) {
-  const envRe = new RegExp(
-    `\\\\begin\\{(${ENV_ALT})\\}([\\s\\S]*?)\\\\end\\{\\1\\}`,
-    'g'
-  );
-  return latex.replace(envRe, (_m, env, body) => {
-    return `\\begin{${env}}${transformBody(body)}\\end{${env}}`;
-  });
+  const tokenRe = new RegExp(`\\\\(begin|end)\\{(${ENV_ALT})\\}`, 'g');
+  const begins = [];
+  const endsByEnv = new Map();
+  for (const m of latex.matchAll(tokenRe)) {
+    const token = { env: m[2], start: m.index, end: m.index + m[0].length };
+    if (m[1] === 'begin') {
+      begins.push(token);
+    } else {
+      if (!endsByEnv.has(token.env)) endsByEnv.set(token.env, { list: [], next: 0 });
+      endsByEnv.get(token.env).list.push(token);
+    }
+  }
+
+  let out = '';
+  let cursor = 0;
+  for (const begin of begins) {
+    if (begin.start < cursor) continue;
+    const ends = endsByEnv.get(begin.env);
+    if (!ends) continue;
+    while (ends.next < ends.list.length && ends.list[ends.next].start < begin.end) ends.next++;
+    if (ends.next >= ends.list.length) continue;
+    const end = ends.list[ends.next];
+    const body = latex.slice(begin.end, end.start);
+    out += latex.slice(cursor, begin.start) +
+      `\\begin{${begin.env}}${transformBody(body)}\\end{${begin.env}}`;
+    cursor = end.end;
+  }
+  return out + latex.slice(cursor);
 }
 
 /** Remove all matrix spacing injections this module may have added. */
