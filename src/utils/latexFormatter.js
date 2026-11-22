@@ -1,5 +1,11 @@
+// Pretty-printing is skipped above this size, and indentation stops growing
+// past MAX_INDENT_DEPTH, so the output stays linear in the input length.
+const MAX_FORMAT_LENGTH = 32768;
+const MAX_INDENT_DEPTH = 12;
+
 export function formatLatexForEditor(latex) {
   if (!latex) return '';
+  if (latex.length > MAX_FORMAT_LENGTH) return latex;
 
   const TAB = '  ';
   let out = '';
@@ -10,16 +16,17 @@ export function formatLatexForEditor(latex) {
   let s = latex.replace(/\s+/g, ' ').trim();
   
   const braceStack = [];
+  const pad = () => TAB.repeat(Math.min(indent, MAX_INDENT_DEPTH));
   const peek = (str) => s.startsWith(str, i);
 
   while (i < s.length) {
     if (peek('\\begin{')) {
       const end = s.indexOf('}', i);
       if (end !== -1) {
-        if (out && !out.endsWith('\n') && !out.endsWith(TAB)) out += '\n' + TAB.repeat(indent);
+        if (out && !out.endsWith('\n') && !out.endsWith(TAB)) out += '\n' + pad();
         out += s.substring(i, end + 1) + '\n';
         indent++;
-        out += TAB.repeat(indent);
+        out += pad();
         i = end + 1;
         continue;
       }
@@ -31,8 +38,8 @@ export function formatLatexForEditor(latex) {
         indent = Math.max(0, indent - 1);
         if (out.endsWith(TAB)) out = out.substring(0, out.length - TAB.length);
         if (!out.endsWith('\n')) out += '\n';
-        out += TAB.repeat(indent) + s.substring(i, end + 1) + '\n';
-        out += TAB.repeat(indent);
+        out += pad() + s.substring(i, end + 1) + '\n';
+        out += pad();
         i = end + 1;
         continue;
       }
@@ -44,20 +51,20 @@ export function formatLatexForEditor(latex) {
         const close = s.indexOf(']', end);
         if (close !== -1) end = close + 1;
       }
-      out += s.substring(i, end) + '\n' + TAB.repeat(indent);
+      out += s.substring(i, end) + '\n' + pad();
       i = end;
       while (s[i] === ' ') i++;
       continue;
     }
 
     if (peek('\\left')) {
-       if (out && !out.endsWith('\n') && !out.endsWith(TAB)) out += '\n' + TAB.repeat(indent);
+       if (out && !out.endsWith('\n') && !out.endsWith(TAB)) out += '\n' + pad();
        out += '\\left';
        i += 5;
        if (i < s.length && s[i] !== ' ') { out += s[i]; i++; } // delimiter
        out += '\n';
        indent++;
-       out += TAB.repeat(indent);
+       out += pad();
        continue;
     }
     
@@ -65,10 +72,10 @@ export function formatLatexForEditor(latex) {
        indent = Math.max(0, indent - 1);
        if (out.endsWith(TAB)) out = out.substring(0, out.length - TAB.length);
        if (!out.endsWith('\n')) out += '\n';
-       out += TAB.repeat(indent) + '\\right';
+       out += pad() + '\\right';
        i += 6;
        if (i < s.length && s[i] !== ' ') { out += s[i]; i++; } // delimiter
-       out += '\n' + TAB.repeat(indent);
+       out += '\n' + pad();
        continue;
     }
 
@@ -78,7 +85,7 @@ export function formatLatexForEditor(latex) {
        // Remove trailing spaces if we are going to add a newline
        if (out.endsWith(' ')) out = out.slice(0, -1);
        if (out && !out.endsWith('\n') && !out.endsWith(TAB)) {
-         out += '\n' + TAB.repeat(indent);
+         out += '\n' + pad();
        }
        out += mathCmdMatch[0];
        i += mathCmdMatch[0].length;
@@ -89,7 +96,8 @@ export function formatLatexForEditor(latex) {
       let depth = 1;
       let j = i + 1;
       let hasCommand = false;
-      while (j < s.length && depth > 0) {
+      // Stop once the content is known to exceed 3 chars; the result is a block either way.
+      while (j < s.length && depth > 0 && j - i - 2 <= 3) {
         if (s[j] === '{') depth++;
         if (s[j] === '}') depth--;
         if (s[j] === '\\' && s[j+1] && /[a-zA-Z]/.test(s[j+1])) hasCommand = true;
@@ -105,7 +113,7 @@ export function formatLatexForEditor(latex) {
       if (isBlock) {
         out += '{\n';
         indent++;
-        out += TAB.repeat(indent);
+        out += pad();
       } else {
         out += '{';
       }
@@ -119,7 +127,7 @@ export function formatLatexForEditor(latex) {
         indent = Math.max(0, indent - 1);
         if (out.endsWith(TAB)) out = out.substring(0, out.length - TAB.length);
         if (!out.endsWith('\n')) out += '\n';
-        out += TAB.repeat(indent) + '}\n' + TAB.repeat(indent);
+        out += pad() + '}\n' + pad();
       } else {
         out += '}';
       }
