@@ -77,6 +77,8 @@ export default function createTableBorderPlugin(CKEditor) {
       editor.model.document.registerPostFixer(writer => {
         const changes = editor.model.document.differ.getChanges();
         let wasFixed = false;
+        // One insert command can add a cell per row or column; walk each table once.
+        const bordersByTable = new Map();
 
         for (const change of changes) {
           if (change.type === 'insert' && change.name === 'tableCell') {
@@ -89,9 +91,14 @@ export default function createTableBorderPlugin(CKEditor) {
                 // Find the parent table and check if it has borders
                 const tableRow = tableCell.parent;
                 const table = tableRow?.parent;
+                if (!table) continue;
+
+                if (!bordersByTable.has(table)) {
+                  bordersByTable.set(table, tableHasBorders(table));
+                }
 
                 // Only add default border if the table already has borders on other cells
-                if (tableHasBorders(table)) {
+                if (bordersByTable.get(table)) {
                   writer.setAttribute('customCellStyle', { border: defaultCellBorder }, tableCell);
                   wasFixed = true;
                 }
