@@ -63,6 +63,7 @@ const RichTextEditor = ({
   variant = 'full', // 'full' | 'slim'
   disabled = false,
   fontLoader = null, // Optional async function that returns array of font names
+  initialFonts = null, // Optional font names already loaded (avoids a second editor build)
   licenseKey = null, // CKEditor license key (required)
   getAvailableFonts = null, // Optional function for FontSymbolSelector
   getFontSupportedGlyphs = null // Optional function for FontSymbolSelector
@@ -75,7 +76,7 @@ const RichTextEditor = ({
   const CKEditorCombined = { ...CKEditorCore, ...CKEditorPremium };
 
   // Load fonts using custom hook
-  const fontFamilyOptions = useCKEditorFonts(defaultFontFamily, fontLoader);
+  const fontFamilyOptions = useCKEditorFonts(defaultFontFamily, fontLoader, initialFonts);
 
   // Update internal state when external value changes
   useEffect(() => {

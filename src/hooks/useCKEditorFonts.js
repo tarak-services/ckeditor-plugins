@@ -1,5 +1,27 @@
 import { useState, useEffect, useRef } from 'react';
 
+const FALLBACK_FONTS = [
+  'Arial',
+  'Helvetica',
+  'Times New Roman',
+  'Courier New'
+];
+
+// Quote names with spaces for CSS, and put the default family first.
+const formatFontOptions = (fonts, defaultFontFamily) => {
+  const formattedFonts = fonts.map(font => (font.includes(' ') ? `"${font}"` : font));
+  if (!defaultFontFamily) return formattedFonts;
+  const formattedDefault = defaultFontFamily.includes(' ')
+    ? `"${defaultFontFamily}"`
+    : defaultFontFamily;
+  const filteredFonts = formattedFonts.filter(
+    f => f !== formattedDefault &&
+         f !== `"${formattedDefault}"` &&
+         f !== formattedDefault.replace(/"/g, '')
+  );
+  return [formattedDefault, ...filteredFonts];
+};
+
 /**
  * Custom hook to load and format CKEditor fonts
  * Handles default font family prioritization
@@ -7,14 +29,14 @@ import { useState, useEffect, useRef } from 'react';
  * @param {string|null} defaultFontFamily - Font to prioritize at the top of the list
  * @param {Function|null} fontLoader - Optional async function that returns an array of font names
  *                                     If not provided, uses fallback fonts
+ * @param {string[]|null} initialFonts - Optional font names already loaded by the caller. Starting
+ *                                       with the same list the loader returns keeps the option count
+ *                                       stable, so editors keyed on it are not built twice.
  */
-export const useCKEditorFonts = (defaultFontFamily = null, fontLoader = null) => {
-  const [fontFamilyOptions, setFontFamilyOptions] = useState([
-    'Arial',
-    'Helvetica',
-    'Times New Roman',
-    'Courier New'
-  ]);
+export const useCKEditorFonts = (defaultFontFamily = null, fontLoader = null, initialFonts = null) => {
+  const [fontFamilyOptions, setFontFamilyOptions] = useState(() => (
+    initialFonts?.length ? formatFontOptions(initialFonts, defaultFontFamily) : FALLBACK_FONTS
+  ));
 
   // Track if component is mounted to avoid state updates after unmount
   const isMountedRef = useRef(false);
@@ -31,13 +53,7 @@ export const useCKEditorFonts = (defaultFontFamily = null, fontLoader = null) =>
             const formattedDefault = defaultFontFamily.includes(' ')
               ? `"${defaultFontFamily}"`
               : defaultFontFamily;
-            setFontFamilyOptions([
-              formattedDefault,
-              'Arial',
-              'Helvetica',
-              'Times New Roman',
-              'Courier New'
-            ]);
+            setFontFamilyOptions([formattedDefault, ...FALLBACK_FONTS]);
           }
           return;
         }
@@ -48,43 +64,14 @@ export const useCKEditorFonts = (defaultFontFamily = null, fontLoader = null) =>
         if (!isMountedRef.current) return;
 
         if (fonts && fonts.length > 0) {
-          // Format fonts for CKEditor - ensure they're valid font-family values
-          const formattedFonts = fonts.map(font => {
-            // If font name contains spaces, wrap it in quotes for CSS
-            if (font.includes(' ')) {
-              return `"${font}"`;
-            }
-            return font;
-          });
-
-          // If a default font family is provided, put it first in the list
-          if (defaultFontFamily) {
-            const formattedDefault = defaultFontFamily.includes(' ')
-              ? `"${defaultFontFamily}"`
-              : defaultFontFamily;
-            // Remove the default font if it already exists in the list, then add it at the front
-            const filteredFonts = formattedFonts.filter(
-              f => f !== formattedDefault &&
-                   f !== `"${formattedDefault}"` &&
-                   f !== formattedDefault.replace(/"/g, '')
-            );
-            setFontFamilyOptions([formattedDefault, ...filteredFonts]);
-          } else {
-            setFontFamilyOptions(formattedFonts);
-          }
+          setFontFamilyOptions(formatFontOptions(fonts, defaultFontFamily));
         } else {
           // If no fonts from loader, use default font family if provided
           if (defaultFontFamily) {
             const formattedDefault = defaultFontFamily.includes(' ')
               ? `"${defaultFontFamily}"`
               : defaultFontFamily;
-            setFontFamilyOptions([
-              formattedDefault,
-              'Arial',
-              'Helvetica',
-              'Times New Roman',
-              'Courier New'
-            ]);
+            setFontFamilyOptions([formattedDefault, ...FALLBACK_FONTS]);
           }
         }
       } catch (error) {
@@ -97,13 +84,7 @@ export const useCKEditorFonts = (defaultFontFamily = null, fontLoader = null) =>
           const formattedDefault = defaultFontFamily.includes(' ')
             ? `"${defaultFontFamily}"`
             : defaultFontFamily;
-          setFontFamilyOptions([
-            formattedDefault,
-            'Arial',
-            'Helvetica',
-            'Times New Roman',
-            'Courier New'
-          ]);
+          setFontFamilyOptions([formattedDefault, ...FALLBACK_FONTS]);
         }
       }
     };
