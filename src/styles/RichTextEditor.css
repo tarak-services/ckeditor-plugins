@@ -315,6 +315,12 @@
   font-size: 1.28em;
 }
 
+/* Keep in sync with `.math-tex .ML__latex` in setmaker math.css.mako. */
+.ck.ck-editor__editable .math-formula-widget .ML__latex,
+.ck.ck-editor__editable .math-tex .ML__latex {
+  padding-block: 3px;
+}
+
 .ck.ck-editor__editable .math-formula-render {
   padding: 0px;
   margin: 0px;
